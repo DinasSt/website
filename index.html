@@ -1539,7 +1539,7 @@ function initMushroomApp() {
 }
 </script>
 
-<!-- Silky Smooth Interactive Blue Net Grid Engine -->
+<!-- Silky Smooth Interactive Blue Net Grid Engine (Cursor & Scroll Reactive) -->
 <script>
 (() => {
   const canvas = document.getElementById('net-grid');
@@ -1552,9 +1552,10 @@ function initMushroomApp() {
   let points = [];
   let cols = 0;
   let rows = 0;
-  const SPACING = 44;
-  const INFLUENCE_RADIUS = 180;
-  const INFLUENCE_RADIUS_SQ = INFLUENCE_RADIUS * INFLUENCE_RADIUS;
+  let spacing = 44;
+  let influenceRadius = 180;
+  let influenceRadiusSq = 180 * 180;
+  let isMobile = false;
 
   const MASK_W = 250;
   const MASK_H = 107;
@@ -1618,11 +1619,36 @@ function initMushroomApp() {
     targetIntensity: 0
   };
 
+  // Scroll & Touch Velocity Tracking for Grid Interactivity
+  let lastScrollY = window.scrollY || window.pageYOffset || 0;
+  let scrollVel = 0;
+  let smoothScrollVel = 0;
+  let scrollPhase = 0;
+  let scrollImpulse = 0;
+
+  const onScroll = () => {
+    const currentY = window.scrollY || window.pageYOffset || 0;
+    const delta = currentY - lastScrollY;
+    lastScrollY = currentY;
+    
+    // Dampen delta to prevent sudden spikes
+    const clampedDelta = Math.max(-60, Math.min(60, delta));
+    scrollVel += clampedDelta * 0.45;
+  };
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+
   const createGrid = () => {
     dpr = Math.min(window.devicePixelRatio || 1, 2);
     const container = document.querySelector('.hero-backdrop');
     width = container ? container.clientWidth : window.innerWidth;
     height = container ? container.clientHeight : window.innerHeight;
+
+    isMobile = width < 768;
+    // Responsive grid spacing: Tighter & finer on mobile screens for crisp display
+    spacing = isMobile ? Math.max(30, Math.min(38, Math.round(width / 13))) : 44;
+    influenceRadius = isMobile ? Math.min(140, Math.max(100, width * 0.32)) : 180;
+    influenceRadiusSq = influenceRadius * influenceRadius;
 
     canvas.width = Math.round(width * dpr);
     canvas.height = Math.round(height * dpr);
@@ -1630,16 +1656,16 @@ function initMushroomApp() {
     canvas.style.height = height + 'px';
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    cols = Math.ceil(width / SPACING) + 2;
-    rows = Math.ceil(height / SPACING) + 2;
-    const startX = -SPACING;
-    const startY = -SPACING;
+    cols = Math.ceil(width / spacing) + 2;
+    rows = Math.ceil(height / spacing) + 2;
+    const startX = -spacing;
+    const startY = -spacing;
 
     points = [];
     for (let r = 0; r <= rows; r++) {
       for (let c = 0; c <= cols; c++) {
-        const ox = startX + c * SPACING;
-        const oy = startY + r * SPACING;
+        const ox = startX + c * spacing;
+        const oy = startY + r * spacing;
         points.push({
           ox: ox,
           oy: oy,
@@ -1684,8 +1710,21 @@ function initMushroomApp() {
     mouse.targetY = -9999;
   });
 
+  // Mobile Touch & Swipe Interactivity
+  let touchStartY = 0;
+  window.addEventListener('touchstart', (e) => {
+    if (e.touches.length > 0) {
+      touchStartY = e.touches[0].clientY;
+      updateCursorState(e.touches[0].clientX, e.touches[0].clientY);
+    }
+  }, { passive: true });
+
   window.addEventListener('touchmove', (e) => {
     if (e.touches.length > 0) {
+      const touchY = e.touches[0].clientY;
+      const touchDelta = touchStartY - touchY;
+      touchStartY = touchY;
+      scrollVel += Math.max(-40, Math.min(40, touchDelta)) * 0.35;
       updateCursorState(e.touches[0].clientX, e.touches[0].clientY);
     }
   }, { passive: true });
@@ -1702,6 +1741,7 @@ function initMushroomApp() {
   const render = () => {
     time += 0.016;
 
+    // Smooth cursor interpolation
     mouse.intensity += (mouse.targetIntensity - mouse.intensity) * 0.08;
     if (mouse.intensity < 0.001) mouse.intensity = 0;
 
@@ -1710,27 +1750,43 @@ function initMushroomApp() {
       mouse.y += (mouse.targetY - mouse.y) * 0.12;
     }
 
+    // Smooth scroll wave physics
+    smoothScrollVel += (scrollVel - smoothScrollVel) * 0.12;
+    scrollVel *= 0.88; // Damping
+    scrollImpulse += (smoothScrollVel - scrollImpulse) * 0.15;
+    scrollPhase += smoothScrollVel * 0.028;
+
+    const maxWaveAmplitude = isMobile ? 12.0 : 18.0;
+    const currentScrollWave = Math.max(-maxWaveAmplitude, Math.min(maxWaveAmplitude, scrollImpulse * 0.5));
+    const scrollEnergy = Math.min(1.0, Math.abs(smoothScrollVel) * 0.04);
+
     ctx.clearRect(0, 0, width, height);
 
     for (let i = 0; i < points.length; i++) {
       const p = points[i];
 
-      const waveX = Math.sin(time + p.phase) * 1.6;
-      const waveY = Math.cos(time * 0.85 + p.phase) * 1.6;
+      // 1. Ambient gentle floating oscillation
+      const waveX = Math.sin(time + p.phase) * 1.5;
+      const waveY = Math.cos(time * 0.85 + p.phase) * 1.5;
 
-      let targetX = p.ox + waveX;
-      let targetY = p.oy + waveY;
+      // 2. Dynamic scroll wave ripple propagating through the mesh
+      const scrollWaveY = Math.sin((p.oy * 0.007) + scrollPhase + p.phase * 0.4) * currentScrollWave;
+      const scrollWaveX = Math.cos((p.ox * 0.007) + scrollPhase * 0.7) * currentScrollWave * 0.35;
 
+      let targetX = p.ox + waveX + scrollWaveX;
+      let targetY = p.oy + waveY + scrollWaveY;
+
+      // 3. Cursor proximity repulsion & physics
       if (mouse.intensity > 0.001) {
         const dx = p.ox - mouse.x;
         const dy = p.oy - mouse.y;
         const distSq = dx * dx + dy * dy;
 
-        if (distSq < INFLUENCE_RADIUS_SQ && distSq > 0.01) {
+        if (distSq < influenceRadiusSq && distSq > 0.01) {
           const dist = Math.sqrt(distSq);
-          const norm = dist / INFLUENCE_RADIUS;
+          const norm = dist / influenceRadius;
           const factor = Math.cos(norm * Math.PI * 0.5) * mouse.intensity;
-          const push = factor * 13.0;
+          const push = factor * (isMobile ? 10.0 : 14.0);
           targetX += (dx / dist) * push;
           targetY += (dy / dist) * push;
         }
@@ -1740,48 +1796,50 @@ function initMushroomApp() {
       p.y += (targetY - p.y) * 0.11;
     }
 
+    // Draw Grid Segments with dynamic cursor + scroll illumination
     for (let r = 0; r <= rows; r++) {
       for (let c = 0; c <= cols; c++) {
         const p = getPoint(c, r);
         if (!p) continue;
 
         const right = getPoint(c + 1, r);
-        if (right) drawNetSegment(p, right, 1.0);
+        if (right) drawNetSegment(p, right, 1.0, scrollEnergy);
 
         const bottom = getPoint(c, r + 1);
-        if (bottom) drawNetSegment(p, bottom, 1.0);
+        if (bottom) drawNetSegment(p, bottom, 1.0, scrollEnergy);
 
         const diag = getPoint(c + 1, r + 1);
-        if (diag && (c + r) % 2 === 0) drawNetSegment(p, diag, 0.6);
+        if (diag && (c + r) % 2 === 0) drawNetSegment(p, diag, 0.6, scrollEnergy);
       }
     }
 
+    // Draw Nodes with luminous interactive glow
     for (let i = 0; i < points.length; i++) {
       const p = points[i];
       
-      let nodeAlpha = 0.55;
-      let nodeRadius = 2.0;
-      let nodeGlow = 0;
+      let nodeAlpha = 0.52 + scrollEnergy * 0.22;
+      let nodeRadius = isMobile ? 1.6 : 2.0;
+      let nodeGlow = scrollEnergy * 6;
 
       if (mouse.intensity > 0.001) {
         const dx = p.x - mouse.x;
         const dy = p.y - mouse.y;
         const distSq = dx * dx + dy * dy;
 
-        if (distSq < INFLUENCE_RADIUS_SQ) {
+        if (distSq < influenceRadiusSq) {
           const dist = Math.sqrt(distSq);
-          const factor = (1 - dist / INFLUENCE_RADIUS) * mouse.intensity;
+          const factor = (1 - dist / influenceRadius) * mouse.intensity;
           nodeAlpha += factor * 0.45;
           nodeRadius += factor * 1.5;
-          nodeGlow = factor * 12;
+          nodeGlow += factor * 12;
 
-          if (dist < INFLUENCE_RADIUS * 0.6) {
-            const beamAlpha = (1 - dist / (INFLUENCE_RADIUS * 0.6)) * 0.5 * mouse.intensity;
+          if (dist < influenceRadius * 0.6) {
+            const beamAlpha = (1 - dist / (influenceRadius * 0.6)) * 0.5 * mouse.intensity;
             ctx.beginPath();
             ctx.moveTo(mouse.x, mouse.y);
             ctx.lineTo(p.x, p.y);
             ctx.strokeStyle = `rgba(56, 189, 248, ${beamAlpha})`;
-            ctx.lineWidth = 1.5;
+            ctx.lineWidth = 1.4;
             ctx.stroke();
           }
         }
@@ -1789,7 +1847,7 @@ function initMushroomApp() {
 
       ctx.beginPath();
       ctx.arc(p.x, p.y, nodeRadius, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(56, 189, 248, ${nodeAlpha})`;
+      ctx.fillStyle = `rgba(56, 189, 248, ${Math.min(1.0, nodeAlpha)})`;
       if (nodeGlow > 0) {
         ctx.shadowColor = 'rgba(0, 210, 255, 0.9)';
         ctx.shadowBlur = nodeGlow;
@@ -1801,10 +1859,12 @@ function initMushroomApp() {
     requestAnimationFrame(render);
   };
 
-  const drawNetSegment = (p1, p2, opacityMultiplier = 1) => {
-    let alpha = 0.42 * opacityMultiplier;
-    let strokeWidth = 1.8;
-    let r = 38, g = 175, b = 254;
+  const drawNetSegment = (p1, p2, opacityMultiplier = 1, scrollEnergy = 0) => {
+    let alpha = (0.40 + scrollEnergy * 0.20) * opacityMultiplier;
+    let strokeWidth = isMobile ? 1.4 : 1.8;
+    let r = Math.round(38 + scrollEnergy * 25);
+    let g = Math.round(175 + scrollEnergy * 35);
+    let b = 254;
 
     if (mouse.intensity > 0.001) {
       const midX = (p1.x + p2.x) * 0.5;
@@ -1813,9 +1873,9 @@ function initMushroomApp() {
       const dy = midY - mouse.y;
       const distSq = dx * dx + dy * dy;
 
-      if (distSq < INFLUENCE_RADIUS_SQ) {
+      if (distSq < influenceRadiusSq) {
         const dist = Math.sqrt(distSq);
-        const factor = (1 - dist / INFLUENCE_RADIUS) * mouse.intensity;
+        const factor = (1 - dist / influenceRadius) * mouse.intensity;
         alpha += factor * 0.50 * opacityMultiplier;
         strokeWidth += factor * 0.8;
         r = Math.round(38 + factor * 50);
