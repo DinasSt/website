@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dinas Stakeliunas — Computer Science Graduate</title>
+<meta name="description" content="Dinas Stakeliunas — Computer Science graduate from Lancaster University, based in Lancaster, England.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#07080d;
+    --line:rgba(255,255,255,.12);
+    --text:#eef0f6;
+    --muted:#a2a9bc;
+    --a1:#7c5cff;
+    --a2:#22d3ee;
+    --a3:#f472b6;
+    --maxw:1120px;
+    --ease:cubic-bezier(.22,.8,.24,1);
+    --font:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  }
+
+  *{box-sizing:border-box}
+  body{
+    margin:0;background:var(--bg);color:var(--text);
+    font-family:var(--font);
+    font-size:17px;line-height:1.65;-webkit-font-smoothing:antialiased;overflow-x:hidden;
+  }
+  img{display:block;max-width:100%}
+  .wrap{width:100%;max-width:var(--maxw);margin-inline:auto;padding-inline:24px}
+
+  /* ==================================================
+     LIQUID GLASS NAV
+     ================================================== */
+  .nav{
+    position:fixed;top:18px;left:0;right:0;z-index:50;
+    display:flex;justify-content:center;padding-inline:16px;
+    animation:drop .8s var(--ease) both;
+  }
+  @keyframes drop{from{opacity:0;transform:translateY(-14px)}}
+
+  .glass-mat{
+    --rim:6px;
+    --blur:24px;
+    --edge:.9;
+    --lift:0 2px 6px -3px rgba(0,0,0,.5);
+    position:relative;isolation:isolate;
+    background:
+      linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.02) 45%,rgba(255,255,255,0) 65%),
+      linear-gradient(180deg,rgba(11,13,21,.30),rgba(11,13,21,.50));
+    backdrop-filter:blur(var(--blur)) saturate(200%);
+    -webkit-backdrop-filter:blur(var(--blur)) saturate(200%);
+    box-shadow:
+      inset 2px 2px 1px -1.5px rgba(255,255,255,var(--edge)),
+      inset -2px -2px 1px -1.5px rgba(255,255,255,calc(var(--edge) * .6)),
+      inset 0 0 22px rgba(255,255,255,.055),
+      inset 0 -8px 20px -14px rgba(0,0,0,.7),
+      var(--lift);
+  }
+
+  .glass-mat::after{
+    content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+    padding:var(--rim);
+    backdrop-filter:blur(6px) brightness(1.35) saturate(150%);
+    -webkit-backdrop-filter:blur(6px) brightness(1.35) saturate(150%);
+    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+            mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+    -webkit-mask-composite:xor;mask-composite:exclude;
+    opacity:.75;z-index:-2;
+  }
+
+  .glass-mat::before{
+    content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+    padding:1px;
+    background:conic-gradient(from 210deg at 50% 50%,
+      rgba(255,255,255,.72) 0deg,
+      rgba(255,255,255,.10) 60deg,
+      rgba(255,255,255,.45) 140deg,
+      rgba(255,255,255,.08) 215deg,
+      rgba(255,255,255,.60) 290deg,
+      rgba(255,255,255,.72) 360deg);
+    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+            mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+    -webkit-mask-composite:xor;mask-composite:exclude;
+    z-index:-1;
+  }
+
+  .glass{
+    width:100%;max-width:var(--maxw);
+    display:flex;align-items:center;justify-content:space-between;gap:18px;
+    padding:9px 9px 9px 16px;border-radius:999px;
+    --lift:0 3px 8px -3px rgba(0,0,0,.55), 0 16px 42px -16px rgba(0,0,0,.85);
+  }
+
+  .brand{
+    display:flex;align-items:center;gap:11px;text-decoration:none;color:var(--text);
+    font-weight:600;letter-spacing:-.015em;font-size:15.5px;
+    text-shadow:0 1px 6px rgba(0,0,0,.5);
+  }
+  .mark{
+    width:32px;height:32px;border-radius:11px;display:grid;place-items:center;
+    background:linear-gradient(135deg,var(--a1),var(--a2));
+    color:#08090f;font-size:13px;font-weight:700;letter-spacing:0;
+    box-shadow:0 6px 20px -6px rgba(124,92,255,.9), inset 0 1px 0 rgba(255,255,255,.45);
+  }
+  @media(max-width:430px){.brand span:last-child{display:none}}
+
+  .nav-cta{
+    position:relative;overflow:hidden;
+    padding:9px 20px;border-radius:999px;text-decoration:none;
+    font-size:14px;font-weight:600;color:#08090f;white-space:nowrap;
+    background:linear-gradient(135deg,var(--a2),var(--a1));
+    box-shadow:0 8px 22px -12px rgba(34,211,238,.8),
+               0 0 26px -4px rgba(34,211,238,0),
+               0 0 60px -12px rgba(124,92,255,0),
+               inset 0 1px 0 rgba(255,255,255,.4);
+    transition:box-shadow .55s var(--ease),filter .55s var(--ease);
+  }
+  .nav-cta:hover,.nav-cta:focus-visible{
+    filter:brightness(1.06);
+    box-shadow:0 8px 22px -12px rgba(34,211,238,.8),
+               0 0 26px -4px rgba(34,211,238,.55),
+               0 0 60px -12px rgba(124,92,255,.65),
+               inset 0 1px 0 rgba(255,255,255,.55);
+  }
+
+  /* ==================== HERO & DEPTH LAYERS ==================== */
+  .hero{position:relative;min-height:100svh;display:flex;align-items:flex-end;overflow:hidden}
+  
+  /* Layer 0: Background Photo (Subtle slight blur) */
+  .hero-media{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+  .hero-media img{
+    width:100%;height:100%;object-fit:cover;object-position:50% 42%;
+    filter:blur(2px) brightness(1.10) saturate(1.13) contrast(1.02);
+    transform:scale(1.015);
+  }
+
+  /* Layer 1: Interactive Blue Net Grid Canvas (Middle layer) */
+  #net-grid{
+    position:absolute;inset:0;z-index:1;
+    pointer-events:none;width:100%;height:100%;
+  }
+
+  /* Layer 2: Subject/Person Foreground Cutout (Clean feathered edges) */
+  .hero-person{position:absolute;inset:0;z-index:2;pointer-events:none}
+  .hero-person img{
+    width:100%;height:100%;object-fit:cover;object-position:50% 42%;
+    filter:brightness(1.14) saturate(1.14) contrast(1.02);
+  }
+
+  /* Layer 3: Contrast Scrim & Lighting Tint */
+  .scrim{
+    position:absolute;inset:0;z-index:3;pointer-events:none;
+    background:
+      radial-gradient(115% 75% at 4% 100%,rgba(5,6,11,.92) 0%,rgba(5,6,11,.55) 45%,transparent 72%),
+      linear-gradient(to top,rgba(7,8,13,.94) 0%,rgba(7,8,13,.55) 32%,rgba(7,8,13,.02) 62%,rgba(7,8,13,.42) 100%),
+      linear-gradient(to right,rgba(7,8,13,.78) 0%,rgba(7,8,13,.24) 44%,rgba(7,8,13,0) 72%);
+  }
+  .tint{
+    position:absolute;inset:0;z-index:4;mix-blend-mode:screen;pointer-events:none;
+    background:linear-gradient(120deg,rgba(124,92,255,.11),transparent 55%,rgba(34,211,238,.09));
+  }
+
+  /* Layer 4: Hero Content */
+  .hero-content{position:relative;z-index:5;width:100%;padding-block:clamp(72px,13vh,150px)}
+  .reveal{animation:rise .9s var(--ease) both}
+  .reveal.d1{animation-delay:.10s}
+  .reveal.d2{animation-delay:.20s}
+  .reveal.d3{animation-delay:.30s}
+  .reveal.d4{animation-delay:.40s}
+  @keyframes rise{from{opacity:0;transform:translateY(24px)}}
+
+  .badge{
+    display:inline-flex;align-items:center;gap:9px;
+    padding:7px 15px 7px 12px;border-radius:999px;
+    font-size:13.5px;font-weight:500;color:#d3d8e7;
+    --rim:4px;--blur:16px;--edge:.75;
+  }
+  .dot{width:8px;height:8px;border-radius:50%;background:#34d399;
+    box-shadow:0 0 0 0 rgba(52,211,153,.7);animation:pulse 2.4s infinite}
+  @keyframes pulse{70%{box-shadow:0 0 0 9px rgba(52,211,153,0)}100%{box-shadow:0 0 0 0 rgba(52,211,153,0)}}
+
+  h1{
+    font-family:var(--font);font-weight:700;letter-spacing:-.035em;
+    font-size:clamp(2.9rem,8.5vw,5.6rem);line-height:1.02;margin:22px 0 0;
+    filter:drop-shadow(0 2px 3px rgba(0,0,0,.7))
+           drop-shadow(0 10px 34px rgba(0,0,0,.75));
+  }
+  .grad{
+    background:linear-gradient(100deg,var(--a2),var(--a1) 45%,var(--a3));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    background-size:220% 100%;animation:shift 9s ease-in-out infinite alternate;
+  }
+  @keyframes shift{to{background-position:100% 0}}
+
+  .role{
+    margin:20px 0 0;font-size:clamp(1.05rem,2.4vw,1.3rem);
+    color:#e9edf7;max-width:46ch;font-weight:500;
+    text-shadow:0 1px 2px rgba(0,0,0,.8), 0 4px 22px rgba(0,0,0,.7);
+  }
+  .chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px}
+  .chip{
+    display:inline-flex;align-items:center;gap:8px;padding:7px 15px;border-radius:999px;
+    font-size:13.5px;color:#c6ccdd;
+    --rim:4px;--blur:16px;--edge:.75;
+  }
+
+  .btn{
+    position:relative;overflow:hidden;
+    display:inline-flex;align-items:center;gap:10px;margin-top:34px;
+    padding:14px 27px;border-radius:14px;text-decoration:none;
+    font-weight:600;font-size:15.5px;color:#08090f;
+    background:linear-gradient(135deg,var(--a1),var(--a2));
+    box-shadow:0 14px 34px -18px rgba(124,92,255,.85),
+               0 0 30px -4px rgba(124,92,255,0),
+               0 0 70px -14px rgba(34,211,238,0),
+               inset 0 1px 0 rgba(255,255,255,.4);
+    transition:box-shadow .55s var(--ease),filter .55s var(--ease);
+  }
+  .btn:hover,.btn:focus-visible{
+    filter:brightness(1.06);
+    box-shadow:0 14px 34px -18px rgba(124,92,255,.85),
+               0 0 30px -4px rgba(124,92,255,.6),
+               0 0 70px -14px rgba(34,211,238,.7),
+               inset 0 1px 0 rgba(255,255,255,.55);
+  }
+
+  .btn::after,.nav-cta::after{
+    content:"";position:absolute;top:-50%;left:-60%;width:45%;height:200%;
+    background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);
+    transform:skewX(-18deg);pointer-events:none;opacity:0;
+  }
+  .btn:hover::after,.btn:focus-visible::after,
+  .nav-cta:hover::after,.nav-cta:focus-visible::after{
+    animation:shimmer .85s var(--ease) forwards;
+  }
+  @keyframes shimmer{
+    from{left:-60%;opacity:1}
+    to{left:130%;opacity:1}
+  }
+
+  @media(prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation:none !important;transition:none !important}
+  }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="glass glass-mat">
+    <a class="brand" href="#top">
+      <span class="mark">DS</span>
+      <span>Dinas Stakeliunas</span>
+    </a>
+    <a class="nav-cta" href="https://www.linkedin.com/in/dinasst/" target="_blank" rel="noopener">Connect</a>
+  </div>
+</header>
+
+<main class="hero" id="top">
+  <!-- Layer 0: Background Photo (Subtle slight blur) -->
+  <div class="hero-media">
+    <img src="assets/dinas-hero.jpg" alt="Dinas Stakeliunas graduation background">
+  </div>
+
+  <!-- Layer 1: Interactive Blue Net Grid (Behind individual) -->
+  <canvas id="net-grid" aria-hidden="true"></canvas>
+
+  <!-- Layer 2: Foreground Individual Cutout (Clean feathered edges) -->
+  <div class="hero-person" aria-hidden="true">
+    <img src="assets/dinas-person.png" alt="">
+  </div>
+
+  <!-- Layer 3: Ambient Scrim and Tint -->
+  <div class="scrim" aria-hidden="true"></div>
+  <div class="tint" aria-hidden="true"></div>
+
+  <!-- Layer 4: Interactive Hero Content -->
+  <div class="hero-content">
+    <div class="wrap">
+      <span class="badge glass-mat reveal"><span class="dot"></span> Open to opportunities</span>
+
+      <h1 class="reveal d1">Dinas<br><span class="grad">Stakeliunas</span></h1>
+
+      <p class="role reveal d2">Computer Science graduate from Lancaster University</p>
+
+      <div class="chips reveal d3">
+        <span class="chip glass-mat">🎓 BSc Computer Science</span>
+        <span class="chip glass-mat">📍 Lancaster, England, UK</span>
+      </div>
+
+      <a class="btn reveal d4" href="https://www.linkedin.com/in/dinasst/" target="_blank" rel="noopener">
+        Connect on LinkedIn <span aria-hidden="true">→</span>
+      </a>
+    </div>
+  </div>
+</main>
+
+<!-- Silky Smooth Interactive Blue Net Grid Engine -->
+<script>
+(() => {
+  const canvas = document.getElementById('net-grid');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  let width = 0;
+  let height = 0;
+  let dpr = 1;
+  let points = [];
+  let cols = 0;
+  let rows = 0;
+  const SPACING = 44;
+  const INFLUENCE_RADIUS = 180;
+  const INFLUENCE_RADIUS_SQ = INFLUENCE_RADIUS * INFLUENCE_RADIUS;
+
+  // Person silhouette bitmask for zero-latency hover occlusion detection
+  const MASK_W = 250;
+  const MASK_H = 107;
+  const MASK_B64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB/gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf/gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH//gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA////+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/////gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP////+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/////4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH/////gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf/////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB/////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH/////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/////4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB//////gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH/////+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf/////4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB//////gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH/////+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf/////4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB//////gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH/////+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf/////4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB//////gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH/////+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/////4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//////gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/////+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/////4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB//////gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH/////+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//////4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD//////gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/////+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//////4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB//////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH//////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD//////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD//////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf/////gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB/////+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH/////4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf/////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB/////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH/////gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf////+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB/////4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH/////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB/////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP////+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB/////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH/////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB/////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH/////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB/////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH/j///gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH8P//8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAfx//4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB/H/+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH8f/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAfw/gAAAAAAAAAAAAAAAAAAAA=';
+  
+  const binStr = atob(MASK_B64);
+  const maskBytes = new Uint8Array(binStr.length);
+  for (let i = 0; i < binStr.length; i++) {
+    maskBytes[i] = binStr.charCodeAt(i);
+  }
+
+  // Fast pixel-accurate check whether cursor is directly over the individual
+  const isCursorOverPerson = (clientX, clientY) => {
+    const hero = document.getElementById('top');
+    if (!hero) return false;
+    const rect = hero.getBoundingClientRect();
+    const cw = rect.width;
+    const ch = rect.height;
+
+    // Matches object-fit: cover and object-position: 50% 42%
+    const imgAspect = 2000 / 858;
+    const containerAspect = cw / ch;
+    let renderW, renderH, offsetX, offsetY;
+
+    if (containerAspect > imgAspect) {
+      renderW = cw;
+      renderH = cw / imgAspect;
+      offsetX = 0;
+      offsetY = (ch - renderH) * 0.42;
+    } else {
+      renderH = ch;
+      renderW = ch * imgAspect;
+      offsetX = (cw - renderW) * 0.50;
+      offsetY = 0;
+    }
+
+    const mouseImgX = (clientX - rect.left - offsetX) / renderW;
+    const mouseImgY = (clientY - rect.top - offsetY) / renderH;
+
+    if (mouseImgX < 0 || mouseImgX >= 1 || mouseImgY < 0 || mouseImgY >= 1) {
+      return false;
+    }
+
+    const px = Math.floor(mouseImgX * MASK_W);
+    const py = Math.floor(mouseImgY * MASK_H);
+    const bitIndex = py * MASK_W + px;
+    const byteIndex = bitIndex >> 3;
+    const bitOffset = 7 - (bitIndex & 7);
+
+    if (byteIndex >= maskBytes.length) return false;
+    return (maskBytes[byteIndex] & (1 << bitOffset)) !== 0;
+  };
+
+  const mouse = {
+    x: -9999,
+    y: -9999,
+    targetX: -9999,
+    targetY: -9999,
+    active: false,
+    intensity: 0,        // Smooth 0.0 -> 1.0 transition factor
+    targetIntensity: 0
+  };
+
+  const createGrid = () => {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    width = window.innerWidth;
+    height = window.innerHeight;
+
+    canvas.width = Math.round(width * dpr);
+    canvas.height = Math.round(height * dpr);
+    canvas.style.width = width + 'px';
+    canvas.style.height = height + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    cols = Math.ceil(width / SPACING) + 2;
+    rows = Math.ceil(height / SPACING) + 2;
+    const startX = -SPACING;
+    const startY = -SPACING;
+
+    points = [];
+    for (let r = 0; r <= rows; r++) {
+      for (let c = 0; c <= cols; c++) {
+        const ox = startX + c * SPACING;
+        const oy = startY + r * SPACING;
+        points.push({
+          ox: ox,
+          oy: oy,
+          x: ox,
+          y: oy,
+          col: c,
+          row: r,
+          phase: (c * 0.32 + r * 0.26)
+        });
+      }
+    }
+  };
+
+  const getPoint = (c, r) => {
+    if (c < 0 || c > cols || r < 0 || r > rows) return null;
+    return points[r * (cols + 1) + c];
+  };
+
+  // Helper to check if cursor is over interactive UI elements or the individual
+  const updateCursorState = (clientX, clientY) => {
+    mouse.targetX = clientX;
+    mouse.targetY = clientY;
+
+    const el = document.elementFromPoint(clientX, clientY);
+    const isOverInteractive = el && el.closest('.nav, .btn, .glass, .badge, .chip, a, button');
+    const isOverPerson = isCursorOverPerson(clientX, clientY);
+
+    if (isOverInteractive || isOverPerson) {
+      // Smoothly disengage grid interaction when over buttons, glass nav bar, or the person
+      mouse.targetIntensity = 0;
+    } else {
+      mouse.targetIntensity = 1;
+      mouse.active = true;
+    }
+  };
+
+  window.addEventListener('mousemove', (e) => {
+    updateCursorState(e.clientX, e.clientY);
+  });
+
+  window.addEventListener('mouseleave', () => {
+    mouse.targetIntensity = 0;
+    mouse.targetX = -9999;
+    mouse.targetY = -9999;
+  });
+
+  window.addEventListener('touchmove', (e) => {
+    if (e.touches.length > 0) {
+      updateCursorState(e.touches[0].clientX, e.touches[0].clientY);
+    }
+  }, { passive: true });
+
+  window.addEventListener('touchend', () => {
+    mouse.targetIntensity = 0;
+  });
+
+  window.addEventListener('resize', createGrid);
+  createGrid();
+
+  let time = 0;
+
+  const render = () => {
+    time += 0.016;
+
+    // Smooth intensity transition (lerp) for seamless element & person handoff
+    mouse.intensity += (mouse.targetIntensity - mouse.intensity) * 0.08;
+    if (mouse.intensity < 0.001) mouse.intensity = 0;
+
+    // Smooth cursor coordinate interpolation
+    if (mouse.intensity > 0.001) {
+      mouse.x += (mouse.targetX - mouse.x) * 0.12;
+      mouse.y += (mouse.targetY - mouse.y) * 0.12;
+    }
+
+    ctx.clearRect(0, 0, width, height);
+
+    // Compute target displacement with origin-based distance to prevent feedback oscillation
+    for (let i = 0; i < points.length; i++) {
+      const p = points[i];
+
+      // Calm ambient floating wave (1.6px amplitude)
+      const waveX = Math.sin(time + p.phase) * 1.6;
+      const waveY = Math.cos(time * 0.85 + p.phase) * 1.6;
+
+      let targetX = p.ox + waveX;
+      let targetY = p.oy + waveY;
+
+      // Smooth cosine displacement scaled continuously by interaction intensity
+      if (mouse.intensity > 0.001) {
+        const dx = p.ox - mouse.x;
+        const dy = p.oy - mouse.y;
+        const distSq = dx * dx + dy * dy;
+
+        if (distSq < INFLUENCE_RADIUS_SQ && distSq > 0.01) {
+          const dist = Math.sqrt(distSq);
+          const norm = dist / INFLUENCE_RADIUS;
+          const factor = Math.cos(norm * Math.PI * 0.5) * mouse.intensity;
+          const push = factor * 13.0; // max 13px subtle displacement
+          targetX += (dx / dist) * push;
+          targetY += (dy / dist) * push;
+        }
+      }
+
+      // Buttery smooth lerp to target position
+      p.x += (targetX - p.x) * 0.11;
+      p.y += (targetY - p.y) * 0.11;
+    }
+
+    // Pass 1: Render grid lines
+    for (let r = 0; r <= rows; r++) {
+      for (let c = 0; c <= cols; c++) {
+        const p = getPoint(c, r);
+        if (!p) continue;
+
+        const right = getPoint(c + 1, r);
+        if (right) {
+          drawNetSegment(p, right, 1.0);
+        }
+
+        const bottom = getPoint(c, r + 1);
+        if (bottom) {
+          drawNetSegment(p, bottom, 1.0);
+        }
+
+        const diag = getPoint(c + 1, r + 1);
+        if (diag && (c + r) % 2 === 0) {
+          drawNetSegment(p, diag, 0.6);
+        }
+      }
+    }
+
+    // Pass 2: Render luminous glowing nodes
+    for (let i = 0; i < points.length; i++) {
+      const p = points[i];
+      
+      let nodeAlpha = 0.55;
+      let nodeRadius = 2.0;
+      let nodeGlow = 0;
+
+      if (mouse.intensity > 0.001) {
+        const dx = p.x - mouse.x;
+        const dy = p.y - mouse.y;
+        const distSq = dx * dx + dy * dy;
+
+        if (distSq < INFLUENCE_RADIUS_SQ) {
+          const dist = Math.sqrt(distSq);
+          const factor = (1 - dist / INFLUENCE_RADIUS) * mouse.intensity;
+          nodeAlpha += factor * 0.45;
+          nodeRadius += factor * 1.5;
+          nodeGlow = factor * 12;
+
+          // Connect cursor to closest nodes smoothly
+          if (dist < INFLUENCE_RADIUS * 0.6) {
+            const beamAlpha = (1 - dist / (INFLUENCE_RADIUS * 0.6)) * 0.5 * mouse.intensity;
+            ctx.beginPath();
+            ctx.moveTo(mouse.x, mouse.y);
+            ctx.lineTo(p.x, p.y);
+            ctx.strokeStyle = `rgba(56, 189, 248, ${beamAlpha})`;
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+          }
+        }
+      }
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, nodeRadius, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(56, 189, 248, ${nodeAlpha})`;
+      if (nodeGlow > 0) {
+        ctx.shadowColor = 'rgba(0, 210, 255, 0.9)';
+        ctx.shadowBlur = nodeGlow;
+      }
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    }
+
+    requestAnimationFrame(render);
+  };
+
+  const drawNetSegment = (p1, p2, opacityMultiplier = 1) => {
+    let alpha = 0.42 * opacityMultiplier;
+    let strokeWidth = 1.8;
+    let r = 38, g = 175, b = 254;
+
+    if (mouse.intensity > 0.001) {
+      const midX = (p1.x + p2.x) * 0.5;
+      const midY = (p1.y + p2.y) * 0.5;
+      const dx = midX - mouse.x;
+      const dy = midY - mouse.y;
+      const distSq = dx * dx + dy * dy;
+
+      if (distSq < INFLUENCE_RADIUS_SQ) {
+        const dist = Math.sqrt(distSq);
+        const factor = (1 - dist / INFLUENCE_RADIUS) * mouse.intensity;
+        alpha += factor * 0.50 * opacityMultiplier;
+        strokeWidth += factor * 0.8;
+        r = Math.round(38 + factor * 50);
+        g = Math.round(175 + factor * 65);
+        b = 255;
+      }
+    }
+
+    ctx.beginPath();
+    ctx.moveTo(p1.x, p1.y);
+    ctx.lineTo(p2.x, p2.y);
+    ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${Math.min(alpha, 0.95)})`;
+    ctx.lineWidth = strokeWidth;
+    ctx.stroke();
+  };
+
+  requestAnimationFrame(render);
+})();
+</script>
+
+</body>
+</html>
