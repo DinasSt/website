@@ -1630,8 +1630,8 @@ function initMushroomApp() {
     lastScrollY = currentY;
     
     // Directional scroll impulse with velocity clamping
-    const clampedDelta = Math.max(-50, Math.min(50, delta));
-    targetScrollVel += clampedDelta * 0.40;
+    const clampedDelta = Math.max(-70, Math.min(70, delta));
+    targetScrollVel += clampedDelta * 0.52;
   };
 
   window.addEventListener('scroll', onScroll, { passive: true });
@@ -1722,7 +1722,7 @@ function initMushroomApp() {
       const touchY = e.touches[0].clientY;
       const touchDelta = touchStartY - touchY;
       touchStartY = touchY;
-      targetScrollVel += Math.max(-35, Math.min(35, touchDelta)) * 0.30;
+      targetScrollVel += Math.max(-45, Math.min(45, touchDelta)) * 0.40;
       updateCursorState(e.touches[0].clientX, e.touches[0].clientY);
     }
   }, { passive: true });
@@ -1748,15 +1748,15 @@ function initMushroomApp() {
       mouse.y += (mouse.targetY - mouse.y) * 0.12;
     }
 
-    // Directional "Woosh" Fluid Inertia
-    smoothScrollVel += (targetScrollVel - smoothScrollVel) * 0.12;
-    targetScrollVel *= 0.85; // Natural smooth deceleration
+    // Directional "Woosh" Fluid Inertia (Slightly increased for a rich, tactile feel)
+    smoothScrollVel += (targetScrollVel - smoothScrollVel) * 0.13;
+    targetScrollVel *= 0.87; // Smooth, luxurious deceleration glide
     if (Math.abs(targetScrollVel) < 0.01) targetScrollVel = 0;
 
     const centerX = width * 0.5;
-    const maxWoosh = isMobile ? 16.0 : 24.0;
-    const clampedWoosh = Math.max(-maxWoosh, Math.min(maxWoosh, smoothScrollVel * 0.45));
-    const scrollEnergy = Math.min(1.0, Math.abs(smoothScrollVel) * 0.035);
+    const maxWoosh = isMobile ? 22.0 : 34.0;
+    const clampedWoosh = Math.max(-maxWoosh, Math.min(maxWoosh, smoothScrollVel * 0.60));
+    const scrollEnergy = Math.min(1.0, Math.abs(smoothScrollVel) * 0.045);
 
     ctx.clearRect(0, 0, width, height);
 
@@ -1771,7 +1771,7 @@ function initMushroomApp() {
       const dxNorm = (p.ox - centerX) / (centerX || 1);
       const parabolicDrag = 1.0 - (dxNorm * dxNorm) * 0.22;
       const wooshY = clampedWoosh * parabolicDrag;
-      const wooshX = dxNorm * clampedWoosh * 0.16;
+      const wooshX = dxNorm * clampedWoosh * 0.22;
 
       let targetX = p.ox + waveX + wooshX;
       let targetY = p.oy + waveY + wooshY;
