@@ -1066,6 +1066,14 @@ window.toggleAllClasses = () => {
   }
 };
 
+// Check if a class is a valid terrestrial fungi biome (rejecting aquatic water bodies 13 & 14)
+function isValidFungiBiome(classNum) {
+  if (!classNum || typeof classNum !== 'number') return false;
+  if (!UKCEH_CLASSES[classNum]) return false;
+  if (classNum === 13 || classNum === 14) return false;
+  return true;
+}
+
 // Method A: Instant 100% Offline Pre-Cached UKCEH Grid Lookup
 function getPreCachedUKCEHClass(lat, lon) {
   if (window.UKCEH_LOOKUP_DATA && window.UKCEH_LOOKUP_DATA.metadata) {
@@ -1076,7 +1084,7 @@ function getPreCachedUKCEHClass(lat, lon) {
       const col = Math.floor((lon - meta.min_lon) / meta.lon_step);
       if (row >= 0 && row < grid.length && col >= 0 && col < grid[0].length) {
         const cls = grid[row][col];
-        if (UKCEH_CLASSES[cls]) return cls;
+        if (isValidFungiBiome(cls)) return cls;
       }
     }
   }
@@ -1107,14 +1115,16 @@ async function queryUKCEHFeatureInfo(lat, lon) {
       const matchVal = text.match(/value_0\s*=\s*'(\d+)'/);
       if (matchVal && matchVal[1]) {
         const classNum = parseInt(matchVal[1], 10);
-        if (UKCEH_CLASSES[classNum]) return classNum;
+        if (isValidFungiBiome(classNum)) return classNum;
+        return null; // Reject water bodies / non-land biomes immediately
       }
     } catch (e) {
       console.warn("Live UKCEH GetFeatureInfo request failed, using pre-cached grid:", e);
     }
   }
 
-  return getPreCachedUKCEHClass(lat, lon);
+  const fallback = getPreCachedUKCEHClass(lat, lon);
+  return isValidFungiBiome(fallback) ? fallback : null;
 }
 
 // Calculate Fruiting Likelihood
