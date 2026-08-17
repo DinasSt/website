@@ -1066,13 +1066,10 @@ window.toggleAllClasses = () => {
   }
 };
 
-// Check if a class is a valid terrestrial fungi biome (rejecting all open water, coastal waters, intertidal mudflats & estuaries: 13 through 19)
+// Check if a class is an official UKCEH class (Classes 1 through 21)
 function isValidFungiBiome(classNum) {
   if (!classNum || typeof classNum !== 'number') return false;
-  if (!UKCEH_CLASSES[classNum]) return false;
-  // 13: Saltwater, 14: Freshwater, 15: Supra-littoral Rock, 16: Supra-littoral Sediment, 17: Littoral Rock, 18: Littoral Sediment, 19: Saltmarsh
-  if (classNum >= 13 && classNum <= 19) return false;
-  return true;
+  return !!UKCEH_CLASSES[classNum];
 }
 
 // Method A: Instant 100% Offline Pre-Cached UKCEH Grid Lookup
@@ -1117,7 +1114,6 @@ async function queryUKCEHFeatureInfo(lat, lon) {
       if (matchVal && matchVal[1]) {
         const classNum = parseInt(matchVal[1], 10);
         if (isValidFungiBiome(classNum)) return classNum;
-        return null; // Reject water bodies / non-land biomes immediately
       }
     } catch (e) {
       console.warn("Live UKCEH GetFeatureInfo request failed, using pre-cached grid:", e);
@@ -1232,12 +1228,21 @@ function calculateFruitingScore(species, weather, habitatClass) {
     tempText = `Temperature ${curT.toFixed(1)}°C is outside active range.`;
   }
 
-  // 5. UKCEH Biome Match Multiplier & Aquatic Clamp (Option 1)
+  // 5. UKCEH Biome Match Multiplier & Zero-Probability Clamps (Water, Marine, Intertidal, Coastal 13-19)
   const habitatInfo = UKCEH_CLASSES[habitatClass] || UKCEH_CLASSES[1];
-  const isAquatic = (habitatClass === 13 || habitatClass === 14);
+  const isZeroHabitat = (habitatClass >= 13 && habitatClass <= 19);
 
-  if (isAquatic) {
-    const aquaticType = (habitatClass === 13 ? "Saltwater" : "Freshwater");
+  if (isZeroHabitat) {
+    const zeroReasons = {
+      13: "Incompatible habitat: Open saltwater marine environment. Macrofungi cannot fruit in seawater.",
+      14: "Incompatible habitat: Open freshwater body. Wild mushrooms grow on land in soil, leaf litter, or woodland host trees.",
+      15: "Incompatible habitat: Maritime spray-zone cliffs and coastal rock. Intense salt spray and lack of woodland timber prevent mushroom fruiting.",
+      16: "Incompatible habitat: Coastal sand dunes and shingle beaches. High salinity and shifting maritime sediment do not support terrestrial mycelium.",
+      17: "Incompatible habitat: Intertidal rocky shore submerged twice daily by ocean tides. Fungi cannot survive marine tidal flooding.",
+      18: "Incompatible habitat: Intertidal mudflats and tidal estuaries. Submerged by saline seawater; incompatible with terrestrial mushroom mycelium.",
+      19: "Incompatible habitat: Coastal saltmarsh. Periodic tidal flooding and high soil salinity prevent wild edible mushroom growth."
+    };
+
     return {
       ...species,
       fpi: 0,
@@ -1247,13 +1252,13 @@ function calculateFruitingScore(species, weather, habitatClass) {
       breakdown: {
         biome: {
           status: 'suboptimal',
-          text: `Incompatible habitat: This location is in open ${aquaticType.toLowerCase()}. Wild mushrooms need terrestrial soil, leaf litter, or woodland trees to grow.`,
+          text: zeroReasons[habitatClass] || "Incompatible coastal or aquatic habitat.",
           habitatName: habitatInfo.name
         },
-        rain: { status: 'suboptimal', text: `N/A — Open water location.`, window: windowName },
-        soil: { status: 'suboptimal', text: `N/A — Submerged aquatic environment.` },
-        temp: { status: 'suboptimal', text: `N/A — Open water location.` },
-        season: { status: 'suboptimal', text: `N/A — Open water location.` }
+        rain: { status: 'suboptimal', text: "N/A — Incompatible habitat substrate.", window: windowName },
+        soil: { status: 'suboptimal', text: "N/A — Submerged, saline, or coastal sediment substrate." },
+        temp: { status: 'suboptimal', text: "N/A — Incompatible habitat zero override." },
+        season: { status: 'suboptimal', text: "N/A — Incompatible habitat zero override." }
       }
     };
   }
@@ -1397,13 +1402,23 @@ function renderSpeciesList() {
   if (!speciesList.length || !currentWeatherData) return;
 
   const habitat = UKCEH_CLASSES[currentHabitatClass] || UKCEH_CLASSES[1];
-  const isAquatic = (currentHabitatClass === 13 || currentHabitatClass === 14);
+  const isZeroHabitat = (currentHabitatClass >= 13 && currentHabitatClass <= 19);
 
   let bannerHtml = '';
-  if (isAquatic) {
+  if (isZeroHabitat) {
+    const bannerDescriptions = {
+      13: `<strong>Open Saltwater (${habitat.name}):</strong> Wild mushrooms grow on land in soil, leaf litter, and woodland trees, so they cannot fruit in open seawater (0% Probability).`,
+      14: `<strong>Open Freshwater (${habitat.name}):</strong> Wild mushrooms grow on land in soil, leaf litter, and woodland trees, so they cannot fruit in open water bodies (0% Probability).`,
+      15: `<strong>Coastal Sea Cliffs (${habitat.name}):</strong> Maritime spray-zone cliffs are exposed to intense ocean salt spray and lack the soil and woodland host trees required for fungi (0% Probability).`,
+      16: `<strong>Coastal Dunes & Shingle (${habitat.name}):</strong> Maritime sand dunes and shingle beaches have high salinity and shifting sediment where edible mushrooms cannot establish (0% Probability).`,
+      17: `<strong>Intertidal Rocky Shore (${habitat.name}):</strong> This zone is submerged twice daily by ocean tides and does not support terrestrial fungi (0% Probability).`,
+      18: `<strong>Intertidal Mudflats & Estuaries (${habitat.name}):</strong> Submerged by ocean and estuary tides with high salinity, making mushroom growth impossible (0% Probability).`,
+      19: `<strong>Coastal Saltmarsh (${habitat.name}):</strong> Tidal saltmarshes have high salinity and regular flooding, preventing wild edible mushroom fruiting (0% Probability).`
+    };
+
     bannerHtml = `
       <div style="background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.35); border-radius: 6px; padding: 10px 12px; margin-bottom: 10px; font-size: 11.5px; color: #93c5fd; line-height: 1.45;">
-        <strong>Open Water (${habitat.name}):</strong> Wild mushrooms grow on land in soil, leaf litter, and woodland trees, so they cannot fruit in open water.
+        ${bannerDescriptions[currentHabitatClass] || `<strong>${habitat.name}:</strong> Incompatible coastal or aquatic environment (0% Probability).`}
       </div>
     `;
   }
