@@ -1434,6 +1434,8 @@ function renderSpeciesList() {
   if (!speciesList.length || !currentWeatherData) return;
 
   const habitat = UKCEH_CLASSES[currentHabitatClass] || UKCEH_CLASSES[1];
+  const isZeroHabitat = (currentHabitatClass >= 13 && currentHabitatClass <= 19);
+
   if (isZeroHabitat) {
     container.innerHTML = `
       <div style="background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.35); border-radius: 6px; padding: 12px 14px; margin-bottom: 8px; font-size: 12px; color: #93c5fd; line-height: 1.5;">
