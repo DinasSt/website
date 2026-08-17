@@ -1066,11 +1066,12 @@ window.toggleAllClasses = () => {
   }
 };
 
-// Check if a class is a valid terrestrial fungi biome (rejecting aquatic water bodies 13 & 14)
+// Check if a class is a valid terrestrial fungi biome (rejecting all open water, coastal waters, intertidal mudflats & estuaries: 13 through 19)
 function isValidFungiBiome(classNum) {
   if (!classNum || typeof classNum !== 'number') return false;
   if (!UKCEH_CLASSES[classNum]) return false;
-  if (classNum === 13 || classNum === 14) return false;
+  // 13: Saltwater, 14: Freshwater, 15: Supra-littoral Rock, 16: Supra-littoral Sediment, 17: Littoral Rock, 18: Littoral Sediment, 19: Saltmarsh
+  if (classNum >= 13 && classNum <= 19) return false;
   return true;
 }
 
