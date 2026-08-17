@@ -1406,19 +1406,9 @@ function renderSpeciesList() {
 
   let bannerHtml = '';
   if (isZeroHabitat) {
-    const bannerDescriptions = {
-      13: `<strong>Open Saltwater (${habitat.name}):</strong> Wild mushrooms grow on land in soil, leaf litter, and woodland trees, so they cannot fruit in open seawater (0% Probability).`,
-      14: `<strong>Open Freshwater (${habitat.name}):</strong> Wild mushrooms grow on land in soil, leaf litter, and woodland trees, so they cannot fruit in open water bodies (0% Probability).`,
-      15: `<strong>Coastal Sea Cliffs (${habitat.name}):</strong> Maritime spray-zone cliffs are exposed to intense ocean salt spray and lack the soil and woodland host trees required for fungi (0% Probability).`,
-      16: `<strong>Coastal Dunes & Shingle (${habitat.name}):</strong> Maritime sand dunes and shingle beaches have high salinity and shifting sediment where edible mushrooms cannot establish (0% Probability).`,
-      17: `<strong>Intertidal Rocky Shore (${habitat.name}):</strong> This zone is submerged twice daily by ocean tides and does not support terrestrial fungi (0% Probability).`,
-      18: `<strong>Intertidal Mudflats & Estuaries (${habitat.name}):</strong> Submerged by ocean and estuary tides with high salinity, making mushroom growth impossible (0% Probability).`,
-      19: `<strong>Coastal Saltmarsh (${habitat.name}):</strong> Tidal saltmarshes have high salinity and regular flooding, preventing wild edible mushroom fruiting (0% Probability).`
-    };
-
     bannerHtml = `
       <div style="background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.35); border-radius: 6px; padding: 10px 12px; margin-bottom: 10px; font-size: 11.5px; color: #93c5fd; line-height: 1.45;">
-        ${bannerDescriptions[currentHabitatClass] || `<strong>${habitat.name}:</strong> Incompatible coastal or aquatic environment (0% Probability).`}
+        Wild mushrooms grow on land in soil, leaf litter, and woodland trees, so they cannot fruit in open water bodies.
       </div>
     `;
   }
