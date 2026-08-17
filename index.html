@@ -8,6 +8,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
   :root{
     --bg:#07080d;
@@ -17,6 +19,9 @@
     --a1:#7c5cff;
     --a2:#22d3ee;
     --a3:#f472b6;
+    --accent-cyan:#00f0ff;
+    --accent-emerald:#10b981;
+    --accent-amber:#f59e0b;
     --maxw:1120px;
     --ease:cubic-bezier(.22,.8,.24,1);
     --font:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
@@ -127,9 +132,9 @@
   }
 
   /* ==================== HERO & DEPTH LAYERS ==================== */
-  .hero{position:relative;min-height:100svh;display:flex;align-items:flex-end;overflow:hidden}
+  .hero{position:relative;min-height:100svh;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden}
   
-  /* Layer 0: Background Photo (Subtle slight blur) */
+  /* Layer 0: Background Photo */
   .hero-media{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden}
   .hero-media img{
     width:100%;height:100%;object-fit:cover;object-position:50% 42%;
@@ -137,13 +142,13 @@
     transform:scale(1.015);
   }
 
-  /* Layer 1: Interactive Blue Net Grid Canvas (Middle layer) */
+  /* Layer 1: Interactive Blue Net Grid Canvas */
   #net-grid{
     position:absolute;inset:0;z-index:1;
     pointer-events:none;width:100%;height:100%;
   }
 
-  /* Layer 2: Subject/Person Foreground Cutout (Clean feathered edges) */
+  /* Layer 2: Subject/Person Foreground Cutout */
   .hero-person{position:absolute;inset:0;z-index:2;pointer-events:none}
   .hero-person img{
     width:100%;height:100%;object-fit:cover;object-position:50% 42%;
@@ -164,7 +169,7 @@
   }
 
   /* Layer 4: Hero Content */
-  .hero-content{position:relative;z-index:5;width:100%;padding-block:clamp(72px,13vh,150px)}
+  .hero-content{position:relative;z-index:5;width:100%;padding-top:clamp(72px,12vh,140px);padding-bottom:50px}
   .reveal{animation:rise .9s var(--ease) both}
   .reveal.d1{animation-delay:.10s}
   .reveal.d2{animation-delay:.20s}
@@ -209,7 +214,7 @@
 
   .btn{
     position:relative;overflow:hidden;
-    display:inline-flex;align-items:center;gap:10px;margin-top:34px;
+    display:inline-flex;align-items:center;gap:10px;margin-top:30px;
     padding:14px 27px;border-radius:14px;text-decoration:none;
     font-weight:600;font-size:15.5px;color:#08090f;
     background:linear-gradient(135deg,var(--a1),var(--a2));
@@ -241,6 +246,445 @@
     to{left:130%;opacity:1}
   }
 
+  /* ==================================================
+     MUSHROOM PREDICTOR DROPDOWN CARD
+     ================================================== */
+  .mushroom-card-section {
+    margin-top: 36px;
+    width: 100%;
+  }
+
+  .mp-card {
+    border-radius: 20px;
+    overflow: hidden;
+    transition: all 0.35s var(--ease);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+  }
+
+  .mp-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    cursor: pointer;
+    user-select: none;
+    background: rgba(13, 21, 34, 0.65);
+    transition: background 0.25s ease;
+  }
+  .mp-header:hover {
+    background: rgba(19, 31, 48, 0.85);
+  }
+
+  .mp-header-left {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .mp-title-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .mp-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: #fff;
+    margin: 0;
+  }
+
+  .mp-badge {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: rgba(0, 240, 255, 0.12);
+    color: var(--accent-cyan);
+    border: 1px solid rgba(0, 240, 255, 0.3);
+    padding: 3px 9px;
+    border-radius: 12px;
+  }
+
+  .mp-subtitle {
+    font-size: 13.5px;
+    color: var(--muted);
+    margin: 0;
+    line-height: 1.45;
+  }
+
+  .mp-toggle-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0, 240, 255, 0.1);
+    color: var(--accent-cyan);
+    border: 1px solid rgba(0, 240, 255, 0.35);
+    padding: 10px 18px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+  .mp-toggle-btn:hover {
+    background: rgba(0, 240, 255, 0.2);
+    border-color: var(--accent-cyan);
+    box-shadow: 0 0 16px rgba(0, 240, 255, 0.2);
+  }
+
+  .mp-arrow {
+    display: inline-block;
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 10px;
+  }
+  .mp-arrow.rotated {
+    transform: rotate(180deg);
+  }
+
+  /* Smooth Dropdown Drawer using CSS Grid */
+  .mp-drawer {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+    opacity: 0;
+    background: #090f19;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .mp-drawer.open {
+    grid-template-rows: 1fr;
+    opacity: 1;
+  }
+
+  .mp-drawer-inner {
+    overflow: hidden;
+  }
+
+  .mp-app-container {
+    display: flex;
+    height: 640px;
+    width: 100%;
+    background: #070a0f;
+  }
+
+  @media (max-width: 900px) {
+    .mp-app-container {
+      flex-direction: column;
+      height: 900px;
+    }
+  }
+
+  /* Sidebar */
+  .mp-sidebar {
+    width: 440px;
+    min-width: 380px;
+    height: 100%;
+    background: #0d1522;
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    padding: 16px;
+    gap: 12px;
+  }
+
+  @media (max-width: 900px) {
+    .mp-sidebar {
+      width: 100%;
+      min-width: 100%;
+      height: 50%;
+      border-right: none;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+  }
+
+  .mp-sidebar::-webkit-scrollbar { width: 5px; }
+  .mp-sidebar::-webkit-scrollbar-thumb { background: #223247; border-radius: 3px; }
+
+  /* Map Container */
+  .mp-map-pane {
+    flex: 1;
+    height: 100%;
+    position: relative;
+    background: #07090e;
+  }
+
+  #mushroom-map {
+    width: 100%;
+    height: 100%;
+    background: #07090e;
+  }
+
+  /* Sub-components */
+  .panel-box {
+    background: #090f19;
+    border: 1px solid #223247;
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+
+  .panel-title {
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+  }
+
+  .toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent-cyan);
+    cursor: pointer;
+  }
+  .toggle-label input { accent-color: var(--accent-cyan); cursor: pointer; }
+
+  .biome-info-card {
+    background: #131f30;
+    border: 1px solid #223247;
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin-top: 6px;
+  }
+
+  .biome-badge {
+    display: inline-block;
+    font-size: 11.5px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+    margin-bottom: 5px;
+  }
+
+  .biome-desc {
+    font-size: 11.5px;
+    color: #cbd5e1;
+    line-height: 1.4;
+  }
+
+  .wms-legend-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 5px;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #223247;
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .legend-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 2px;
+    flex-shrink: 0;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+  }
+
+  .wms-classes-more {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+    opacity: 0;
+  }
+
+  .wms-classes-more.open {
+    grid-template-rows: 1fr;
+    opacity: 1;
+    margin-top: 5px;
+  }
+
+  .wms-classes-more-inner { overflow: hidden; }
+
+  .show-more-classes-btn {
+    width: 100%;
+    background: #0d1726;
+    border: 1px solid #223247;
+    color: var(--accent-cyan);
+    font-size: 10.5px;
+    font-weight: 600;
+    padding: 5px 8px;
+    border-radius: 4px;
+    margin-top: 7px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+  }
+
+  .coord-text {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--accent-cyan);
+  }
+
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-top: 6px;
+  }
+
+  .metric-cell {
+    background: #131f30;
+    border: 1px solid #223247;
+    border-radius: 6px;
+    padding: 7px 9px;
+  }
+
+  .metric-title {
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .metric-value {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #fff;
+    margin-top: 1px;
+  }
+  .metric-value.highlight { color: var(--accent-cyan); }
+  .metric-sub { font-size: 9.5px; color: var(--muted); margin-top: 1px; }
+
+  .species-card {
+    background: #131f30;
+    border: 1px solid #223247;
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin-bottom: 7px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .species-card:hover {
+    background: #1a2a40;
+    border-color: #2d415b;
+  }
+  .species-card.expanded {
+    background: #1e3048;
+    border-color: var(--accent-cyan);
+  }
+
+  .species-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .species-name { font-size: 13px; font-weight: 600; color: #fff; }
+  .species-sci { font-size: 10.5px; font-style: italic; color: var(--muted); }
+
+  .prob-badge {
+    padding: 2px 7px;
+    border-radius: 8px;
+    font-size: 10.5px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .progress-track {
+    height: 4px;
+    background: #070a0f;
+    border-radius: 2px;
+    margin: 6px 0;
+    overflow: hidden;
+  }
+  .progress-fill { height: 100%; border-radius: 2px; transition: width 0.3s ease; }
+
+  .species-summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 10.5px;
+    color: #cbd5e1;
+  }
+
+  .expand-indicator {
+    font-size: 9.5px;
+    font-weight: 600;
+    color: var(--accent-cyan);
+  }
+
+  .breakdown-drawer {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .breakdown-section-title {
+    font-size: 9.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--accent-cyan);
+  }
+
+  .factor-item {
+    background: #0b1320;
+    border: 1px solid #223247;
+    border-radius: 5px;
+    padding: 6px 8px;
+  }
+
+  .factor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 3px;
+  }
+
+  .factor-name { font-size: 10.5px; font-weight: 700; color: #fff; }
+  .factor-status-badge {
+    font-size: 9px;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+  .factor-status-badge.optimal { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+  .factor-status-badge.moderate { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+  .factor-status-badge.suboptimal { background: rgba(244, 63, 94, 0.2); color: #fb7185; }
+
+  .factor-detail-text { font-size: 10.5px; color: #94a3b8; line-height: 1.35; }
+  .factor-detail-text strong { color: #e2e8f0; }
+
+  .foraging-advice-box {
+    background: #090f19;
+    border: 1px solid #223247;
+    border-radius: 5px;
+    padding: 7px 9px;
+    font-size: 10.5px;
+    color: #cbd5e1;
+    line-height: 1.4;
+  }
+  .foraging-advice-box strong { color: #fff; }
+
   @media(prefers-reduced-motion:reduce){
     *,*::before,*::after{animation:none !important;transition:none !important}
   }
@@ -259,7 +703,7 @@
 </header>
 
 <main class="hero" id="top">
-  <!-- Layer 0: Background Photo (Subtle slight blur) -->
+  <!-- Layer 0: Background Photo -->
   <div class="hero-media">
     <img src="assets/dinas-hero.jpg" alt="Dinas Stakeliunas graduation background">
   </div>
@@ -267,7 +711,7 @@
   <!-- Layer 1: Interactive Blue Net Grid (Behind individual) -->
   <canvas id="net-grid" aria-hidden="true"></canvas>
 
-  <!-- Layer 2: Foreground Individual Cutout (Clean feathered edges) -->
+  <!-- Layer 2: Foreground Individual Cutout -->
   <div class="hero-person" aria-hidden="true">
     <img src="assets/dinas-person.png" alt="">
   </div>
@@ -279,6 +723,7 @@
   <!-- Layer 4: Interactive Hero Content -->
   <div class="hero-content">
     <div class="wrap">
+      <!-- Main Singular Personal Card -->
       <span class="badge glass-mat reveal"><span class="dot"></span> Open to opportunities</span>
 
       <h1 class="reveal d1">Dinas<br><span class="grad">Stakeliunas</span></h1>
@@ -290,12 +735,616 @@
         <span class="chip glass-mat">📍 Lancaster, England, UK</span>
       </div>
 
-      <a class="btn reveal d4" href="https://www.linkedin.com/in/dinasst/" target="_blank" rel="noopener">
-        Connect on LinkedIn <span aria-hidden="true">→</span>
-      </a>
+      <div class="reveal d4">
+        <a class="btn" href="https://www.linkedin.com/in/dinasst/" target="_blank" rel="noopener">
+          Connect on LinkedIn <span aria-hidden="true">→</span>
+        </a>
+      </div>
+
+      <!-- ==================================================
+           MUSHROOM PREDICTOR DROPDOWN CARD (AFTER MAIN CARD)
+           ================================================== -->
+      <div class="mushroom-card-section reveal d4">
+        <div class="mp-card glass-mat">
+          <!-- Clickable Header -->
+          <div class="mp-header" onclick="toggleMushroomPredictor()">
+            <div class="mp-header-left">
+              <div class="mp-title-row">
+                <h2 class="mp-title">Mushroom Predictor</h2>
+                <span class="mp-badge">UKCEH LCM2024 & Weather</span>
+              </div>
+              <p class="mp-subtitle">
+                Interactive fruiting predictor correlating UKCEH satellite land cover classifications with live weather microclimate statistics.
+              </p>
+            </div>
+            <button class="mp-toggle-btn" id="mp-toggle-btn" type="button">
+              <span id="mp-btn-label">Expand Interactive Map</span>
+              <span id="mp-btn-arrow" class="mp-arrow">▼</span>
+            </button>
+          </div>
+
+          <!-- Expandable App Drawer -->
+          <div class="mp-drawer" id="mp-drawer">
+            <div class="mp-drawer-inner">
+              <div class="mp-app-container">
+                
+                <!-- Left Sidebar -->
+                <div class="mp-sidebar">
+                  <!-- 1. UKCEH Biome Info & Legend -->
+                  <div class="panel-box">
+                    <div class="panel-header">
+                      <span class="panel-title">UKCEH Land Cover Map 2024</span>
+                      <label class="toggle-label">
+                        <input type="checkbox" id="toggle-ukceh-wms" checked>
+                        <span>UKCEH 1km Layer</span>
+                      </label>
+                    </div>
+
+                    <div class="biome-info-card">
+                      <div id="active-biome-badge" class="biome-badge" style="background: #ff0000; color: #fff;">
+                        Class 1: Broadleaved, Mixed & Yew Woodland
+                      </div>
+                      <div id="active-biome-desc" class="biome-desc">
+                        Ancient and semi-natural deciduous woods dominated by mature Oak, Beech, Birch, and Sweet Chestnut. Primary mycorrhizal habitat for Porcini, Chanterelles, and Hedgehog fungi.
+                      </div>
+
+                      <!-- Initial 8 Classes -->
+                      <div class="wms-legend-grid">
+                        <div class="legend-item"><div class="legend-dot" style="background: #ff0000;"></div><span>1. Broadleaved Wood</span></div>
+                        <div class="legend-item"><div class="legend-dot" style="background: #006600;"></div><span>2. Coniferous Wood</span></div>
+                        <div class="legend-item"><div class="legend-dot" style="background: #732600;"></div><span>3. Arable & Hort.</span></div>
+                        <div class="legend-item"><div class="legend-dot" style="background: #00ff00;"></div><span>4. Improved Grass</span></div>
+                        <div class="legend-item"><div class="legend-dot" style="background: #7fe57f;"></div><span>5. Neutral Grass</span></div>
+                        <div class="legend-item"><div class="legend-dot" style="background: #70a800;"></div><span>6. Calcareous Grass</span></div>
+                        <div class="legend-item"><div class="legend-dot" style="background: #998100;"></div><span>7. Acid Grassland</span></div>
+                        <div class="legend-item"><div class="legend-dot" style="background: #ffff00;"></div><span>8. Fen & Swamp</span></div>
+                      </div>
+
+                      <!-- Smooth Dropdown for Classes 9-21 -->
+                      <div id="classes-more-container" class="wms-classes-more">
+                        <div class="wms-classes-more-inner">
+                          <div class="wms-legend-grid" style="border-top: none; margin-top: 0; padding-top: 0;">
+                            <div class="legend-item"><div class="legend-dot" style="background: #801a80;"></div><span>9. Heather Moor</span></div>
+                            <div class="legend-item"><div class="legend-dot" style="background: #e68ca6;"></div><span>10. Heather Grass</span></div>
+                            <div class="legend-item"><div class="legend-dot" style="background: #008073;"></div><span>11. Bog / Peat</span></div>
+                            <div class="legend-item"><div class="legend-dot" style="background: #d2d2ff;"></div><span>12. Inland Rock</span></div>
+                            <div class="legend-item"><div class="legend-dot" style="background: #000080;"></div><span>13. Saltwater</span></div>
+                            <div class="legend-item"><div class="legend-dot" style="background: #0000ff;"></div><span>14. Freshwater</span></div>
+                            <div class="legend-item"><div class="legend-dot" style="background: #ccb300;"></div><span>15. Supra Rock</span></div>
+                            <div class="legend-item"><div class="legend-dot" style="background: #ccb300;"></div><span>16. Supra Sediment</span></div>
+                            <div class="legend-item"><div class="legend-dot" style="background: #ffff80;"></div><span>17. Littoral Rock</span></div>
+                            <div class="legend-item"><div class="legend-dot" style="background: #ffff80;"></div><span>18. Littoral Sediment</span></div>
+                            <div class="legend-item"><div class="legend-dot" style="background: #8080ff;"></div><span>19. Saltmarsh</span></div>
+                            <div class="legend-item"><div class="legend-dot" style="background: #000000;"></div><span>20. Urban</span></div>
+                            <div class="legend-item"><div class="legend-dot" style="background: #808080;"></div><span>21. Suburban</span></div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <button id="toggle-classes-btn" class="show-more-classes-btn" type="button" onclick="event.stopPropagation(); toggleAllClasses()">
+                        <span id="classes-btn-text">Show all 21 UKCEH classes</span>
+                        <span id="classes-btn-arrow" class="btn-arrow">▼</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- 2. Location Weather Statistics -->
+                  <div class="panel-box">
+                    <div class="panel-header">
+                      <div>
+                        <span class="panel-title">Location Microclimate</span>
+                        <div class="coord-text" id="target-coords">54.400°N, 3.000°W (Lake District)</div>
+                      </div>
+                      <span class="mp-badge" id="weather-badge" style="font-size: 9.5px;">Live Open-Meteo</span>
+                    </div>
+
+                    <div class="metrics-grid">
+                      <div class="metric-cell">
+                        <div class="metric-title">Temperature</div>
+                        <div class="metric-value" id="val-temp">--</div>
+                        <div class="metric-sub" id="val-humid">-- Humidity</div>
+                      </div>
+                      <div class="metric-cell">
+                        <div class="metric-title">Topsoil Moisture (0-3cm)</div>
+                        <div class="metric-value highlight" id="val-soil">--</div>
+                        <div class="metric-sub" id="val-soil-deep">Deep: --</div>
+                      </div>
+                      <div class="metric-cell">
+                        <div class="metric-title">Rain Incubation (6-12d)</div>
+                        <div class="metric-value" id="val-rain-lag">--</div>
+                        <div class="metric-sub" id="val-rain-recent">3-7d: --</div>
+                      </div>
+                      <div class="metric-cell">
+                        <div class="metric-title">14-Day Rain Total</div>
+                        <div class="metric-value" id="val-rain-total">--</div>
+                        <div class="metric-sub" id="val-soil-temp">Soil: --</div>
+                      </div>
+                    </div>
+                    <div style="font-size: 10px; color: var(--muted); margin-top: 6px;">
+                      Click anywhere on the map to sample UKCEH biomes & live weather conditions.
+                    </div>
+                  </div>
+
+                  <!-- 3. Fruiting Likelihood List -->
+                  <div>
+                    <div class="panel-header">
+                      <span class="panel-title">Mushroom Fruiting Assessment</span>
+                      <span style="font-size: 9.5px; color: var(--accent-cyan);">Click cards to expand</span>
+                    </div>
+                    <div id="species-container"></div>
+                  </div>
+                </div>
+
+                <!-- Right Map Pane -->
+                <div class="mp-map-pane">
+                  <div id="mushroom-map"></div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </main>
+
+<!-- Datasets & Scripts -->
+<script src="data/species_data.js"></script>
+<script src="data/ukceh_lcm2024_lookup.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- Interactive Mushroom Predictor Engine -->
+<script>
+let mushroomMap = null;
+let ukcehWmsLayer = null;
+let clickMarker = null;
+let currentWeatherData = null;
+let currentHabitatClass = 1;
+let expandedSpeciesId = 'boletus_edulis';
+let isAllClassesOpen = false;
+let isPredictorOpen = false;
+let lastClickTime = 0;
+const THROTTLE_MS = 300;
+
+// Official UKCEH 21 Classes
+const UKCEH_CLASSES = {
+  1: { name: "Class 1: Broadleaved, Mixed & Yew Woodland", biomeKey: "deciduous_woodland", color: "#ff0000", textColor: "#fff", desc: "Ancient and semi-natural deciduous woods dominated by mature Oak, Beech, Birch, and Sweet Chestnut. Primary mycorrhizal habitat for Porcini, Chanterelles, and Hedgehog fungi." },
+  2: { name: "Class 2: Coniferous Woodland", biomeKey: "coniferous_pinewood", color: "#006600", textColor: "#fff", desc: "Native Caledonian pinewoods and conifer plantations (Scots Pine, Spruce, Larch) with acidic needle beds. Prime habitat for Bay Boletes, Saffron Milkcaps, and Cauliflower fungi." },
+  3: { name: "Class 3: Arable and Horticulture", biomeKey: "arable", color: "#732600", textColor: "#fff", desc: "Intensive arable cropland and cultivated land. Low natural wild mushroom diversity due to regular soil disturbance and agricultural inputs." },
+  4: { name: "Class 4: Improved Grassland", biomeKey: "calcareous_pasture", color: "#00ff00", textColor: "#000", desc: "Fertilised and grazed pasture fields. Rapid flushes of Field Mushrooms (Agaricus campestris) and Giant Puffballs following warm late-summer rains." },
+  5: { name: "Class 5: Neutral Grassland", biomeKey: "calcareous_pasture", color: "#7fe57f", textColor: "#000", desc: "Unimproved hay meadows and permanent pastures. Rich in Parasol Mushrooms, Field Blewits, and Fairy Ring Champignons." },
+  6: { name: "Class 6: Calcareous Grassland", biomeKey: "calcareous_pasture", color: "#70a800", textColor: "#fff", desc: "Chalk downlands and limestone pastures (e.g. South Downs, Yorkshire Dales Malham Moor). Ideal alkaline soil for Giant Puffballs and Field Mushrooms." },
+  7: { name: "Class 7: Acid Grassland", biomeKey: "moorland_heath", color: "#998100", textColor: "#fff", desc: "Upland fells and acid pastures. Frequent habitat for birch mycorrhizal associates and grassland saprotrophs." },
+  8: { name: "Class 8: Fen, Marsh and Swamp", biomeKey: "wetland_riparian", color: "#ffff00", textColor: "#000", desc: "Wet carr woodlands, damp river floodplains, and willow/alder beds. High humidity host for Oyster Mushrooms, Velvet Shank, and Jelly Ear." },
+  9: { name: "Class 9: Heather Moorland", biomeKey: "moorland_heath", color: "#801a80", textColor: "#fff", desc: "Acidic peat moorlands and heather fringes with Silver & Downy Birch. Strict partner habitat for Orange Birch Boletes (Leccinum versipelle)." },
+  10: { name: "Class 10: Heather Grassland", biomeKey: "moorland_heath", color: "#e68ca6", textColor: "#000", desc: "Moorland grass mosaics supporting Orange Birch Boletes and Parasol mushrooms along lower fringe edges." },
+  11: { name: "Class 11: Bog / Peatland", biomeKey: "moorland_heath", color: "#008073", textColor: "#fff", desc: "Waterlogged blanket bogs and mossy birch margins supporting cold-tolerant mycorrhizal boletes." },
+  12: { name: "Class 12: Inland Rock", biomeKey: "rock", color: "#d2d2ff", textColor: "#000", desc: "Exposed inland crags, scree slopes, and limestone pavements." },
+  13: { name: "Class 13: Saltwater", biomeKey: "water", color: "#000080", textColor: "#fff", desc: "Marine and coastal saltwater bodies." },
+  14: { name: "Class 14: Freshwater", biomeKey: "water", color: "#0000ff", textColor: "#fff", desc: "Inland rivers, reservoirs, and natural lochs/lakes." },
+  15: { name: "Class 15: Supra-littoral Rock", biomeKey: "coastal", color: "#ccb300", textColor: "#000", desc: "Maritime cliffs and spray-zone coastal rock." },
+  16: { name: "Class 16: Supra-littoral Sediment", biomeKey: "coastal", color: "#ccb300", textColor: "#000", desc: "Coastal shingle, sand dunes, and maritime sediment." },
+  17: { name: "Class 17: Littoral Rock", biomeKey: "coastal", color: "#ffff80", textColor: "#000", desc: "Intertidal rocky shores." },
+  18: { name: "Class 18: Littoral Sediment", biomeKey: "coastal", color: "#ffff80", textColor: "#000", desc: "Intertidal mudflats and sandy beaches." },
+  19: { name: "Class 19: Saltmarsh", biomeKey: "coastal", color: "#8080ff", textColor: "#000", desc: "Coastal saltmarshes and intertidal halophytic vegetation." },
+  20: { name: "Class 20: Urban", biomeKey: "urban", color: "#000000", textColor: "#fff", desc: "Built-up urban environment. Shaggy Inkcaps and woodchip saprotrophs occur in parks and gardens." },
+  21: { name: "Class 21: Suburban", biomeKey: "urban", color: "#808080", textColor: "#fff", desc: "Suburban gardens and parklands with mature garden trees." }
+};
+
+// Toggle Main Dropdown Card
+window.toggleMushroomPredictor = () => {
+  isPredictorOpen = !isPredictorOpen;
+  const drawer = document.getElementById('mp-drawer');
+  const label = document.getElementById('mp-btn-label');
+  const arrow = document.getElementById('mp-btn-arrow');
+
+  if (isPredictorOpen) {
+    drawer.classList.add('open');
+    label.innerText = 'Collapse Map';
+    arrow.classList.add('rotated');
+
+    // Initialize Map on first expand
+    if (!mushroomMap) {
+      setTimeout(initMushroomApp, 50);
+    } else {
+      setTimeout(() => { mushroomMap.invalidateSize(); }, 350);
+    }
+  } else {
+    drawer.classList.remove('open');
+    label.innerText = 'Expand Interactive Map';
+    arrow.classList.remove('rotated');
+  }
+};
+
+// Toggle 21 Classes Accordion
+window.toggleAllClasses = () => {
+  isAllClassesOpen = !isAllClassesOpen;
+  const container = document.getElementById('classes-more-container');
+  const btnText = document.getElementById('classes-btn-text');
+  const arrow = document.getElementById('classes-btn-arrow');
+
+  if (isAllClassesOpen) {
+    container.classList.add('open');
+    btnText.innerText = "Show fewer classes";
+    arrow.classList.add('rotated');
+  } else {
+    container.classList.remove('open');
+    btnText.innerText = "Show all 21 UKCEH classes";
+    arrow.classList.remove('rotated');
+  }
+};
+
+// Method A: Instant 100% Offline Pre-Cached UKCEH Grid Lookup
+function getPreCachedUKCEHClass(lat, lon) {
+  if (window.UKCEH_LOOKUP_DATA && window.UKCEH_LOOKUP_DATA.metadata) {
+    const meta = window.UKCEH_LOOKUP_DATA.metadata;
+    const grid = window.UKCEH_LOOKUP_DATA.grid;
+    if (lat >= meta.min_lat && lat <= meta.max_lat && lon >= meta.min_lon && lon <= meta.max_lon) {
+      const row = Math.floor((lat - meta.min_lat) / meta.lat_step);
+      const col = Math.floor((lon - meta.min_lon) / meta.lon_step);
+      if (row >= 0 && row < grid.length && col >= 0 && col < grid[0].length) {
+        const cls = grid[row][col];
+        if (UKCEH_CLASSES[cls]) return cls;
+      }
+    }
+  }
+  return 1;
+}
+
+// Calculate Fruiting Likelihood
+function calculateFruitingScore(species, weather, habitatClass) {
+  const today = new Date();
+  const currentMonth = today.getMonth() + 1;
+  const d = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  const currentWeek = Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+
+  // 1. Seasonality
+  let sSeason = 0.25;
+  let seasonStatus = 'suboptimal';
+  let seasonText = '';
+  const inSeason = species.season_months.includes(currentMonth);
+  const inPeak = species.peak_weeks.includes(currentWeek);
+
+  if (inSeason) {
+    if (inPeak) {
+      sSeason = 1.0;
+      seasonStatus = 'optimal';
+      seasonText = `Week ${currentWeek} — in peak UK calendar window.`;
+    } else {
+      const dists = species.peak_weeks.map(w => Math.abs(currentWeek - w));
+      const minDist = Math.min(...dists);
+      sSeason = Math.max(0.45, 1.0 - minDist * 0.1);
+      seasonStatus = 'moderate';
+      seasonText = `In active season (Month ${currentMonth}), near peak window.`;
+    }
+  } else {
+    seasonStatus = 'suboptimal';
+    seasonText = `Outside active fruiting season (${species.season_months.join(', ')}).`;
+  }
+
+  // 2. Rainfall Lag
+  const trig = species.weather_triggers;
+  const optRain = trig.optimal_cumulative_rain_mm;
+  const minRain = trig.min_cumulative_rain_mm;
+  let rainMeasured = weather.rainLag6to12;
+  let windowName = "6–12 days prior";
+
+  if (trig.rain_trigger_window_days[1] <= 6) {
+    rainMeasured = weather.rainLag3to7;
+    windowName = "3–7 days prior";
+  }
+
+  let sRain = 0.3;
+  let rainStatus = 'suboptimal';
+  let rainText = '';
+
+  if (rainMeasured >= optRain) {
+    sRain = 1.0;
+    rainStatus = 'optimal';
+    rainText = `Measured ${rainMeasured.toFixed(1)} mm meets optimal ${optRain} mm threshold.`;
+  } else if (rainMeasured >= minRain) {
+    sRain = 0.65;
+    rainStatus = 'moderate';
+    rainText = `Measured ${rainMeasured.toFixed(1)} mm meets minimum (${minRain} mm).`;
+  } else {
+    sRain = Math.max(0.2, (rainMeasured / minRain) * 0.5);
+    rainStatus = 'suboptimal';
+    rainText = `Measured ${rainMeasured.toFixed(1)} mm is below minimum required (${minRain} mm).`;
+  }
+
+  // 3. Soil Moisture
+  let sSoil = 1.0;
+  let soilStatus = 'optimal';
+  let soilText = '';
+
+  if (trig.min_soil_moisture_vol > 0) {
+    if (weather.soilMoistureTop >= trig.min_soil_moisture_vol) {
+      sSoil = 1.0;
+      soilStatus = 'optimal';
+      soilText = `Topsoil moisture is ${weather.soilMoistureTop.toFixed(3)} m³/m³ (adequate).`;
+    } else {
+      sSoil = Math.max(0.2, weather.soilMoistureTop / trig.min_soil_moisture_vol);
+      soilStatus = 'suboptimal';
+      soilText = `Topsoil moisture is ${weather.soilMoistureTop.toFixed(3)} m³/m³ (dry).`;
+    }
+  } else {
+    soilStatus = 'optimal';
+    soilText = `Wood-inhabiting species nourished by host timber and ${weather.humidity}% humidity.`;
+  }
+
+  // 4. Temperature
+  let sTemp = 0.4;
+  let tempStatus = 'suboptimal';
+  let tempText = '';
+  const curT = weather.currentTemp;
+
+  if (curT >= trig.optimal_day_temp_c[0] && curT <= trig.optimal_day_temp_c[1]) {
+    sTemp = 1.0;
+    tempStatus = 'optimal';
+    tempText = `Temperature ${curT.toFixed(1)}°C is within optimal ${trig.optimal_day_temp_c[0]}–${trig.optimal_day_temp_c[1]}°C window.`;
+  } else if (curT >= trig.min_temp_c && curT <= trig.max_temp_c) {
+    sTemp = 0.75;
+    tempStatus = 'moderate';
+    tempText = `Temperature ${curT.toFixed(1)}°C is within tolerable range (${trig.min_temp_c}–${trig.max_temp_c}°C).`;
+  } else {
+    sTemp = 0.25;
+    tempStatus = 'suboptimal';
+    tempText = `Temperature ${curT.toFixed(1)}°C is outside active range.`;
+  }
+
+  // 5. UKCEH Biome Match Multiplier
+  const habitatInfo = UKCEH_CLASSES[habitatClass] || UKCEH_CLASSES[1];
+  const biomeKey = habitatInfo.biomeKey;
+  const isBiomeMatch = species.primary_biomes.includes(biomeKey);
+  const biomeMultiplier = isBiomeMatch ? 1.25 : 0.45;
+
+  let biomeStatus = isBiomeMatch ? 'optimal' : 'suboptimal';
+  let biomeText = isBiomeMatch
+    ? `Matches ${habitatInfo.name} (+25% score boost).`
+    : `Mismatch: Mapped as ${habitatInfo.name} (-55% reduction).`;
+
+  const raw = (sSeason * 0.35 + sRain * 0.25 + sSoil * 0.22 + sTemp * 0.18) * 100.0 * biomeMultiplier;
+  const fpi = Math.max(5.0, Math.min(98.0, Math.round(raw * 10) / 10));
+
+  let rating = "Low";
+  let color = "#64748b";
+  if (fpi >= 80) { rating = "Very High"; color = "#10b981"; }
+  else if (fpi >= 60) { rating = "High"; color = "#38bdf8"; }
+  else if (fpi >= 40) { rating = "Moderate"; color = "#f59e0b"; }
+
+  return {
+    ...species,
+    fpi,
+    rating,
+    color,
+    isBiomeMatch,
+    breakdown: {
+      biome: { status: biomeStatus, text: biomeText, habitatName: habitatInfo.name },
+      rain: { status: rainStatus, text: rainText, window: windowName },
+      soil: { status: soilStatus, text: soilText },
+      temp: { status: tempStatus, text: tempText },
+      season: { status: seasonStatus, text: seasonText }
+    }
+  };
+}
+
+// Sample Location & Weather
+async function sampleLocation(lat, lon) {
+  const now = Date.now();
+  if (now - lastClickTime < THROTTLE_MS) return;
+  lastClickTime = now;
+
+  document.getElementById('target-coords').innerText = `${lat.toFixed(3)}°N, ${Math.abs(lon).toFixed(3)}°W`;
+  document.getElementById('weather-badge').innerText = "Querying...";
+
+  if (clickMarker && mushroomMap) mushroomMap.removeLayer(clickMarker);
+  if (mushroomMap) {
+    clickMarker = L.circleMarker([lat, lon], {
+      radius: 7,
+      color: '#00f0ff',
+      fillColor: '#00f0ff',
+      fillOpacity: 0.6,
+      weight: 2
+    }).addTo(mushroomMap);
+  }
+
+  // Instant Pre-Cached UKCEH lookup
+  currentHabitatClass = getPreCachedUKCEHClass(lat, lon);
+  const habitat = UKCEH_CLASSES[currentHabitatClass] || UKCEH_CLASSES[1];
+
+  document.getElementById('active-biome-badge').innerText = habitat.name;
+  document.getElementById('active-biome-badge').style.background = habitat.color;
+  document.getElementById('active-biome-badge').style.color = habitat.textColor;
+  document.getElementById('active-biome-desc').innerText = habitat.desc;
+
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,precipitation&hourly=soil_temperature_0cm,soil_moisture_0_to_1cm,soil_moisture_1_to_3cm,soil_moisture_3_to_9cm&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&past_days=14&forecast_days=1&timezone=auto`;
+    const res = await fetch(url);
+    const data = await res.json();
+
+    const current = data.current || {};
+    const hourly = data.hourly || {};
+    const daily = data.daily || {};
+
+    const currentTemp = current.temperature_2m !== undefined ? current.temperature_2m : 16.0;
+    const humidity = current.relative_humidity_2m || 80;
+
+    const smTop = hourly.soil_moisture_0_to_1cm || [];
+    const smMid = hourly.soil_moisture_1_to_3cm || [];
+    const recentTop = smTop.slice(-24);
+    const recentMid = smMid.slice(-24);
+    const soilMoistureTop = recentTop.length ? (recentTop.reduce((a,b)=>a+b,0)/recentTop.length + recentMid.reduce((a,b)=>a+b,0)/recentMid.length)/2.0 : 0.36;
+
+    const smDeep = hourly.soil_moisture_3_to_9cm || [];
+    const soilMoistureDeep = smDeep.length ? smDeep.slice(-24).reduce((a,b)=>a+b,0)/24 : 0.40;
+
+    const soilTempVals = hourly.soil_temperature_0cm || [];
+    const soilTemp = soilTempVals.length ? soilTempVals.slice(-24).reduce((a,b)=>a+b,0)/24 : 14.5;
+
+    const precip = daily.precipitation_sum || [];
+    const rainLag6to12 = precip.length >= 14 ? precip.slice(0, 7).reduce((a,b)=>a+b,0) : 18.0;
+    const rainLag3to7 = precip.length >= 14 ? precip.slice(7, 12).reduce((a,b)=>a+b,0) : 12.0;
+    const totalRain14d = precip.reduce((a,b)=>a+b,0);
+
+    currentWeatherData = {
+      currentTemp: Math.round(currentTemp * 10) / 10,
+      humidity: Math.round(humidity),
+      soilMoistureTop: Math.round(soilMoistureTop * 1000) / 1000,
+      soilMoistureDeep: Math.round(soilMoistureDeep * 1000) / 1000,
+      soilTemp: Math.round(soilTemp * 10) / 10,
+      rainLag6to12: Math.round(rainLag6to12 * 10) / 10,
+      rainLag3to7: Math.round(rainLag3to7 * 10) / 10,
+      totalRain14d: Math.round(totalRain14d * 10) / 10
+    };
+
+    document.getElementById('val-temp').innerText = `${currentWeatherData.currentTemp}°C`;
+    document.getElementById('val-humid').innerText = `${currentWeatherData.humidity}% Humidity`;
+    document.getElementById('val-soil').innerText = `${currentWeatherData.soilMoistureTop} m³/m³`;
+    document.getElementById('val-soil-deep').innerText = `Deep: ${currentWeatherData.soilMoistureDeep} m³/m³`;
+    document.getElementById('val-rain-lag').innerText = `${currentWeatherData.rainLag6to12} mm`;
+    document.getElementById('val-rain-recent').innerText = `3-7d: ${currentWeatherData.rainLag3to7} mm`;
+    document.getElementById('val-rain-total').innerText = `${currentWeatherData.totalRain14d} mm`;
+    document.getElementById('val-soil-temp').innerText = `Soil: ${currentWeatherData.soilTemp}°C`;
+    document.getElementById('weather-badge').innerText = "Live Open-Meteo";
+
+    renderSpeciesList();
+
+  } catch (err) {
+    document.getElementById('weather-badge').innerText = "Model Fallback";
+  }
+}
+
+// Toggle Species Accordion
+window.toggleSpeciesExpand = (spId) => {
+  expandedSpeciesId = (expandedSpeciesId === spId ? null : spId);
+  renderSpeciesList();
+};
+
+function renderSpeciesList() {
+  const container = document.getElementById('species-container');
+  const speciesList = window.UK_SPECIES_DATABASE ? window.UK_SPECIES_DATABASE.species : [];
+  if (!speciesList.length || !currentWeatherData) return;
+
+  const scored = speciesList.map(sp => calculateFruitingScore(sp, currentWeatherData, currentHabitatClass));
+  scored.sort((a, b) => b.fpi - a.fpi);
+
+  container.innerHTML = scored.map(sp => {
+    const isExpanded = (expandedSpeciesId === sp.id);
+    const bk = sp.breakdown;
+
+    return `
+      <div class="species-card ${isExpanded ? 'expanded' : ''}" onclick="toggleSpeciesExpand('${sp.id}')">
+        <div class="species-top-row">
+          <div>
+            <div class="species-name">${sp.common_name}</div>
+            <div class="species-sci">${sp.scientific_name}</div>
+          </div>
+          <span class="prob-badge" style="background: ${sp.color};">${sp.fpi}% ${sp.rating}</span>
+        </div>
+
+        <div class="progress-track">
+          <div class="progress-fill" style="width: ${sp.fpi}%; background: ${sp.color};"></div>
+        </div>
+
+        <div class="species-summary-row">
+          <span><strong>Edibility:</strong> ${sp.edibility}</span>
+          <span class="expand-indicator">${isExpanded ? 'Collapse ▲' : 'Expand Conditions ▼'}</span>
+        </div>
+
+        ${isExpanded ? `
+          <div class="breakdown-drawer">
+            <div class="breakdown-section-title">Condition Breakdown</div>
+            <div class="factor-item">
+              <div class="factor-header">
+                <span class="factor-name">1. UKCEH Biome Match</span>
+                <span class="factor-status-badge ${bk.biome.status}">${bk.biome.status.toUpperCase()}</span>
+              </div>
+              <div class="factor-detail-text">${bk.biome.text}</div>
+            </div>
+
+            <div class="factor-item">
+              <div class="factor-header">
+                <span class="factor-name">2. Rain Incubation</span>
+                <span class="factor-status-badge ${bk.rain.status}">${bk.rain.status.toUpperCase()}</span>
+              </div>
+              <div class="factor-detail-text">${bk.rain.text}</div>
+            </div>
+
+            <div class="factor-item">
+              <div class="factor-header">
+                <span class="factor-name">3. Topsoil Moisture</span>
+                <span class="factor-status-badge ${bk.soil.status}">${bk.soil.status.toUpperCase()}</span>
+              </div>
+              <div class="factor-detail-text">${bk.soil.text}</div>
+            </div>
+
+            <div class="factor-item">
+              <div class="factor-header">
+                <span class="factor-name">4. Temperature & Season</span>
+                <span class="factor-status-badge ${bk.temp.status}">${bk.temp.status.toUpperCase()}</span>
+              </div>
+              <div class="factor-detail-text">${bk.temp.text} (${bk.season.text})</div>
+            </div>
+
+            <div class="foraging-advice-box">
+              <div><strong>Host Trees:</strong> ${sp.associated_trees && sp.associated_trees.length ? sp.associated_trees.join(', ') : 'Grassland associate'}</div>
+              <div><strong>Foraging Tips:</strong> ${sp.foraging_tips}</div>
+            </div>
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+function initMushroomApp() {
+  const mapEl = document.getElementById('mushroom-map');
+  if (!mapEl || mushroomMap) return;
+
+  mushroomMap = L.map('mushroom-map', {
+    zoomControl: false,
+    minZoom: 5,
+    maxZoom: 18
+  }).setView([55.0, -3.8], 6);
+
+  L.control.zoom({ position: 'topright' }).addTo(mushroomMap);
+
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
+    maxZoom: 19
+  }).addTo(mushroomMap);
+
+  const WMS_ENDPOINT = 'https://catalogue.ceh.ac.uk/maps/e499059a-3ca1-4204-a0ba-e1006a823b6c';
+  ukcehWmsLayer = L.tileLayer.wms(WMS_ENDPOINT, {
+    layers: 'LC.GB.1km_dom,LC.NI.1km_dom',
+    format: 'image/png',
+    transparent: true,
+    version: '1.3.0',
+    crs: L.CRS.EPSG3857,
+    opacity: 0.65,
+    attribution: 'Based upon LCM2024 &copy; UKCEH'
+  }).addTo(mushroomMap);
+
+  document.getElementById('toggle-ukceh-wms').addEventListener('change', (e) => {
+    if (e.target.checked) {
+      if (!mushroomMap.hasLayer(ukcehWmsLayer)) mushroomMap.addLayer(ukcehWmsLayer);
+    } else {
+      if (mushroomMap.hasLayer(ukcehWmsLayer)) mushroomMap.removeLayer(ukcehWmsLayer);
+    }
+  });
+
+  mushroomMap.on('click', (e) => {
+    sampleLocation(e.latlng.lat, e.latlng.lng);
+  });
+
+  sampleLocation(54.40, -3.00);
+}
+</script>
 
 <!-- Silky Smooth Interactive Blue Net Grid Engine -->
 <script>
@@ -314,39 +1363,38 @@
   const INFLUENCE_RADIUS = 180;
   const INFLUENCE_RADIUS_SQ = INFLUENCE_RADIUS * INFLUENCE_RADIUS;
 
-  // Person silhouette bitmask for zero-latency hover occlusion detection
   const MASK_W = 250;
   const MASK_H = 107;
   const MASK_B64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB/gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf/gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH//gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA////+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/////gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP////+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/////4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH/////gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf/////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB/////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH/////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/////4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB//////gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH/////+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf/////4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB//////gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH/////+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf/////4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB//////gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH/////+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf/////4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB//////gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH/////+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/////4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//////gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/////+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/////4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB//////gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH/////+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//////4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD//////gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/////+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//////4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB//////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH//////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD//////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD//////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf/////gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB/////+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH/////4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf/////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB/////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH/////gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf////+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB/////4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH/////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB/////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP////+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB/////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH/////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB/////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH/////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB/////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH/j///gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH8P//8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAfx//4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB/H/+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH8f/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAfw/gAAAAAAAAAAAAAAAAAAAA=';
-  
-  const binStr = atob(MASK_B64);
-  const maskBytes = new Uint8Array(binStr.length);
-  for (let i = 0; i < binStr.length; i++) {
-    maskBytes[i] = binStr.charCodeAt(i);
+
+  let maskBytes = null;
+  if (typeof atob === 'function') {
+    const raw = atob(MASK_B64);
+    maskBytes = new Uint8Array(raw.length);
+    for (let i = 0; i < raw.length; i++) {
+      maskBytes[i] = raw.charCodeAt(i);
+    }
   }
 
-  // Fast pixel-accurate check whether cursor is directly over the individual
   const isCursorOverPerson = (clientX, clientY) => {
-    const hero = document.getElementById('top');
-    if (!hero) return false;
-    const rect = hero.getBoundingClientRect();
-    const cw = rect.width;
-    const ch = rect.height;
+    if (!maskBytes) return false;
+    const heroEl = document.querySelector('.hero');
+    if (!heroEl) return false;
+    const rect = heroEl.getBoundingClientRect();
 
-    // Matches object-fit: cover and object-position: 50% 42%
-    const imgAspect = 2000 / 858;
-    const containerAspect = cw / ch;
+    const imgAspect = 1920 / 823;
+    const containerAspect = rect.width / rect.height;
+
     let renderW, renderH, offsetX, offsetY;
-
     if (containerAspect > imgAspect) {
-      renderW = cw;
-      renderH = cw / imgAspect;
+      renderW = rect.width;
+      renderH = rect.width / imgAspect;
       offsetX = 0;
-      offsetY = (ch - renderH) * 0.42;
+      offsetY = (rect.height - renderH) * 0.42;
     } else {
-      renderH = ch;
-      renderW = ch * imgAspect;
-      offsetX = (cw - renderW) * 0.50;
+      renderH = rect.height;
+      renderW = rect.height * imgAspect;
+      offsetX = (rect.width - renderW) * 0.50;
       offsetY = 0;
     }
 
@@ -373,7 +1421,7 @@
     targetX: -9999,
     targetY: -9999,
     active: false,
-    intensity: 0,        // Smooth 0.0 -> 1.0 transition factor
+    intensity: 0,
     targetIntensity: 0
   };
 
@@ -416,17 +1464,15 @@
     return points[r * (cols + 1) + c];
   };
 
-  // Helper to check if cursor is over interactive UI elements or the individual
   const updateCursorState = (clientX, clientY) => {
     mouse.targetX = clientX;
     mouse.targetY = clientY;
 
     const el = document.elementFromPoint(clientX, clientY);
-    const isOverInteractive = el && el.closest('.nav, .btn, .glass, .badge, .chip, a, button');
+    const isOverInteractive = el && el.closest('.nav, .btn, .glass, .badge, .chip, .mp-card, a, button, input');
     const isOverPerson = isCursorOverPerson(clientX, clientY);
 
     if (isOverInteractive || isOverPerson) {
-      // Smoothly disengage grid interaction when over buttons, glass nav bar, or the person
       mouse.targetIntensity = 0;
     } else {
       mouse.targetIntensity = 1;
@@ -462,11 +1508,9 @@
   const render = () => {
     time += 0.016;
 
-    // Smooth intensity transition (lerp) for seamless element & person handoff
     mouse.intensity += (mouse.targetIntensity - mouse.intensity) * 0.08;
     if (mouse.intensity < 0.001) mouse.intensity = 0;
 
-    // Smooth cursor coordinate interpolation
     if (mouse.intensity > 0.001) {
       mouse.x += (mouse.targetX - mouse.x) * 0.12;
       mouse.y += (mouse.targetY - mouse.y) * 0.12;
@@ -474,18 +1518,15 @@
 
     ctx.clearRect(0, 0, width, height);
 
-    // Compute target displacement with origin-based distance to prevent feedback oscillation
     for (let i = 0; i < points.length; i++) {
       const p = points[i];
 
-      // Calm ambient floating wave (1.6px amplitude)
       const waveX = Math.sin(time + p.phase) * 1.6;
       const waveY = Math.cos(time * 0.85 + p.phase) * 1.6;
 
       let targetX = p.ox + waveX;
       let targetY = p.oy + waveY;
 
-      // Smooth cosine displacement scaled continuously by interaction intensity
       if (mouse.intensity > 0.001) {
         const dx = p.ox - mouse.x;
         const dy = p.oy - mouse.y;
@@ -495,41 +1536,32 @@
           const dist = Math.sqrt(distSq);
           const norm = dist / INFLUENCE_RADIUS;
           const factor = Math.cos(norm * Math.PI * 0.5) * mouse.intensity;
-          const push = factor * 13.0; // max 13px subtle displacement
+          const push = factor * 13.0;
           targetX += (dx / dist) * push;
           targetY += (dy / dist) * push;
         }
       }
 
-      // Buttery smooth lerp to target position
       p.x += (targetX - p.x) * 0.11;
       p.y += (targetY - p.y) * 0.11;
     }
 
-    // Pass 1: Render grid lines
     for (let r = 0; r <= rows; r++) {
       for (let c = 0; c <= cols; c++) {
         const p = getPoint(c, r);
         if (!p) continue;
 
         const right = getPoint(c + 1, r);
-        if (right) {
-          drawNetSegment(p, right, 1.0);
-        }
+        if (right) drawNetSegment(p, right, 1.0);
 
         const bottom = getPoint(c, r + 1);
-        if (bottom) {
-          drawNetSegment(p, bottom, 1.0);
-        }
+        if (bottom) drawNetSegment(p, bottom, 1.0);
 
         const diag = getPoint(c + 1, r + 1);
-        if (diag && (c + r) % 2 === 0) {
-          drawNetSegment(p, diag, 0.6);
-        }
+        if (diag && (c + r) % 2 === 0) drawNetSegment(p, diag, 0.6);
       }
     }
 
-    // Pass 2: Render luminous glowing nodes
     for (let i = 0; i < points.length; i++) {
       const p = points[i];
       
@@ -549,7 +1581,6 @@
           nodeRadius += factor * 1.5;
           nodeGlow = factor * 12;
 
-          // Connect cursor to closest nodes smoothly
           if (dist < INFLUENCE_RADIUS * 0.6) {
             const beamAlpha = (1 - dist / (INFLUENCE_RADIUS * 0.6)) * 0.5 * mouse.intensity;
             ctx.beginPath();
