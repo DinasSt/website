@@ -1083,6 +1083,34 @@ function getPreCachedUKCEHClass(lat, lon) {
   return 1;
 }
 
+// Query Official UKCEH LCM2024 GetFeatureInfo for exact pixel accuracy with offline fallback
+async function queryUKCEHFeatureInfo(lat, lon) {
+  if (!mushroomMap) return getPreCachedUKCEHClass(lat, lon);
+  try {
+    const point = mushroomMap.latLngToContainerPoint([lat, lon]);
+    const size = mushroomMap.getSize();
+    const bounds = mushroomMap.getBounds();
+    const sw = L.CRS.EPSG3857.project(bounds.getSouthWest());
+    const ne = L.CRS.EPSG3857.project(bounds.getNorthEast());
+    const bboxStr = `${sw.x},${sw.y},${ne.x},${ne.y}`;
+
+    const url = `https://catalogue.ceh.ac.uk/maps/e499059a-3ca1-4204-a0ba-e1006a823b6c?service=WMS&version=1.3.0&request=GetFeatureInfo&layers=LC.GB.1km_dom,LC.NI.1km_dom&query_layers=LC.GB.1km_dom,LC.NI.1km_dom&crs=EPSG:3857&bbox=${bboxStr}&width=${size.x}&height=${size.y}&i=${Math.round(point.x)}&j=${Math.round(point.y)}&info_format=text/plain`;
+    
+    const res = await fetch(url);
+    const text = await res.text();
+
+    const matchVal = text.match(/value_0\s*=\s*'(\d+)'/);
+    if (matchVal && matchVal[1]) {
+      const classNum = parseInt(matchVal[1], 10);
+      if (UKCEH_CLASSES[classNum]) return classNum;
+    }
+  } catch (e) {
+    console.warn("Live UKCEH GetFeatureInfo request failed, using pre-cached grid:", e);
+  }
+
+  return getPreCachedUKCEHClass(lat, lon);
+}
+
 // Calculate Fruiting Likelihood
 function calculateFruitingScore(species, weather, habitatClass) {
   const today = new Date();
@@ -1243,8 +1271,8 @@ async function sampleLocation(lat, lon) {
     }).addTo(mushroomMap);
   }
 
-  // Instant Pre-Cached UKCEH lookup
-  currentHabitatClass = getPreCachedUKCEHClass(lat, lon);
+  // Ground-truth UKCEH classification matching visible raster pixels
+  currentHabitatClass = await queryUKCEHFeatureInfo(lat, lon);
   const habitat = UKCEH_CLASSES[currentHabitatClass] || UKCEH_CLASSES[1];
 
   document.getElementById('active-biome-badge').innerText = habitat.name;
