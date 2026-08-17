@@ -1215,8 +1215,32 @@ function calculateFruitingScore(species, weather, habitatClass) {
     tempText = `Temperature ${curT.toFixed(1)}°C is outside active range.`;
   }
 
-  // 5. UKCEH Biome Match Multiplier
+  // 5. UKCEH Biome Match Multiplier & Aquatic Clamp (Option 1)
   const habitatInfo = UKCEH_CLASSES[habitatClass] || UKCEH_CLASSES[1];
+  const isAquatic = (habitatClass === 13 || habitatClass === 14);
+
+  if (isAquatic) {
+    const aquaticType = (habitatClass === 13 ? "Saltwater (Marine)" : "Freshwater Body");
+    return {
+      ...species,
+      fpi: 0,
+      rating: "Incompatible",
+      color: "#64748b",
+      isBiomeMatch: false,
+      breakdown: {
+        biome: {
+          status: 'suboptimal',
+          text: `Incompatible Aquatic Body: Mapped as ${aquaticType}. Wild edible mushrooms require terrestrial soil, leaf litter, or host timber substrates and do not fruit in open water bodies.`,
+          habitatName: habitatInfo.name
+        },
+        rain: { status: 'suboptimal', text: `N/A — Incompatible open water environment.`, window: windowName },
+        soil: { status: 'suboptimal', text: `N/A — Submerged aquatic substrate.` },
+        temp: { status: 'suboptimal', text: `N/A — Aquatic habitat zero override.` },
+        season: { status: 'suboptimal', text: `N/A — Aquatic habitat zero override.` }
+      }
+    };
+  }
+
   const biomeKey = habitatInfo.biomeKey;
   const isBiomeMatch = species.primary_biomes.includes(biomeKey);
   const biomeMultiplier = isBiomeMatch ? 1.25 : 0.45;
@@ -1348,10 +1372,22 @@ function renderSpeciesList() {
   const speciesList = window.UK_SPECIES_DATABASE ? window.UK_SPECIES_DATABASE.species : [];
   if (!speciesList.length || !currentWeatherData) return;
 
+  const habitat = UKCEH_CLASSES[currentHabitatClass] || UKCEH_CLASSES[1];
+  const isAquatic = (currentHabitatClass === 13 || currentHabitatClass === 14);
+
+  let bannerHtml = '';
+  if (isAquatic) {
+    bannerHtml = `
+      <div style="background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.35); border-radius: 6px; padding: 10px 12px; margin-bottom: 10px; font-size: 11px; color: #93c5fd; line-height: 1.45;">
+        <strong>Aquatic Body Detected (${habitat.name}):</strong> Wild edible macrofungi require terrestrial root networks, leaf litter, or host timber and do not fruit in open water bodies. Probability is strictly clamped to 0%.
+      </div>
+    `;
+  }
+
   const scored = speciesList.map(sp => calculateFruitingScore(sp, currentWeatherData, currentHabitatClass));
   scored.sort((a, b) => b.fpi - a.fpi);
 
-  container.innerHTML = scored.map(sp => {
+  container.innerHTML = bannerHtml + scored.map(sp => {
     const isExpanded = (expandedSpeciesId === sp.id);
     const bk = sp.breakdown;
 
