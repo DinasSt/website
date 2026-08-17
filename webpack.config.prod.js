@@ -21,6 +21,7 @@ module.exports = merge(common, {
         { from: 'icon.png', to: 'icon.png' },
         { from: 'data', to: 'data' },
         { from: 'CNAME', to: 'CNAME', toType: 'template' },
+        { from: '.nojekyll', to: '.nojekyll', toType: 'template' },
         { from: '404.html', to: '404.html' },
         { from: 'site.webmanifest', to: 'site.webmanifest' },
       ],
