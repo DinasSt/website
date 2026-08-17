@@ -435,12 +435,22 @@
     height: 100%;
     position: relative;
     background: #07090e;
+    isolation: isolate;
+    overflow: hidden;
   }
 
   #mushroom-map {
     width: 100%;
     height: 100%;
     background: #07090e;
+    position: relative;
+    z-index: 1;
+  }
+
+  .mp-map-pane .leaflet-container {
+    width: 100% !important;
+    height: 100% !important;
+    background: #07090e !important;
   }
 
   @media (max-width: 768px) {
@@ -1037,10 +1047,17 @@ window.toggleMushroomPredictor = () => {
 
     // Initialize Map on first expand
     if (!mushroomMap) {
-      setTimeout(initMushroomApp, 50);
-    } else {
-      setTimeout(() => { mushroomMap.invalidateSize(); }, 350);
+      initMushroomApp();
     }
+    
+    // Staged size invalidation during and after the 400ms CSS drawer transition
+    [50, 150, 300, 450, 650].forEach(delay => {
+      setTimeout(() => {
+        if (mushroomMap) {
+          mushroomMap.invalidateSize({ pan: false });
+        }
+      }, delay);
+    });
   } else {
     drawer.classList.remove('open');
     label.innerText = 'Expand Map';
@@ -1493,13 +1510,15 @@ function initMushroomApp() {
   mushroomMap = L.map('mushroom-map', {
     zoomControl: false,
     minZoom: 5,
-    maxZoom: 18
+    maxZoom: 18,
+    trackResize: true
   }).setView([55.0, -3.8], 6);
 
   L.control.zoom({ position: 'topright' }).addTo(mushroomMap);
 
   L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
     attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
+    subdomains: 'abcd',
     maxZoom: 19
   }).addTo(mushroomMap);
 
@@ -1525,6 +1544,26 @@ function initMushroomApp() {
   mushroomMap.on('click', (e) => {
     sampleLocation(e.latlng.lat, e.latlng.lng);
   });
+
+  // Attach ResizeObserver to automatically handle mobile orientation & viewport shifts
+  if (window.ResizeObserver) {
+    const ro = new ResizeObserver(() => {
+      if (mushroomMap) {
+        mushroomMap.invalidateSize({ pan: false });
+      }
+    });
+    ro.observe(mapEl);
+  }
+
+  // Also listen to drawer transitionend event
+  const drawerEl = document.getElementById('mp-drawer');
+  if (drawerEl) {
+    drawerEl.addEventListener('transitionend', () => {
+      if (mushroomMap) {
+        mushroomMap.invalidateSize({ pan: false });
+      }
+    });
+  }
 
   sampleLocation(54.40, -3.00);
 }
