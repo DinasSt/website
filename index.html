@@ -1220,7 +1220,7 @@ function calculateFruitingScore(species, weather, habitatClass) {
   const isAquatic = (habitatClass === 13 || habitatClass === 14);
 
   if (isAquatic) {
-    const aquaticType = (habitatClass === 13 ? "Saltwater (Marine)" : "Freshwater Body");
+    const aquaticType = (habitatClass === 13 ? "Saltwater" : "Freshwater");
     return {
       ...species,
       fpi: 0,
@@ -1230,13 +1230,13 @@ function calculateFruitingScore(species, weather, habitatClass) {
       breakdown: {
         biome: {
           status: 'suboptimal',
-          text: `Incompatible Aquatic Body: Mapped as ${aquaticType}. Wild edible mushrooms require terrestrial soil, leaf litter, or host timber substrates and do not fruit in open water bodies.`,
+          text: `Incompatible habitat: This location is in open ${aquaticType.toLowerCase()}. Wild mushrooms need terrestrial soil, leaf litter, or woodland trees to grow.`,
           habitatName: habitatInfo.name
         },
-        rain: { status: 'suboptimal', text: `N/A — Incompatible open water environment.`, window: windowName },
-        soil: { status: 'suboptimal', text: `N/A — Submerged aquatic substrate.` },
-        temp: { status: 'suboptimal', text: `N/A — Aquatic habitat zero override.` },
-        season: { status: 'suboptimal', text: `N/A — Aquatic habitat zero override.` }
+        rain: { status: 'suboptimal', text: `N/A — Open water location.`, window: windowName },
+        soil: { status: 'suboptimal', text: `N/A — Submerged aquatic environment.` },
+        temp: { status: 'suboptimal', text: `N/A — Open water location.` },
+        season: { status: 'suboptimal', text: `N/A — Open water location.` }
       }
     };
   }
@@ -1378,8 +1378,8 @@ function renderSpeciesList() {
   let bannerHtml = '';
   if (isAquatic) {
     bannerHtml = `
-      <div style="background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.35); border-radius: 6px; padding: 10px 12px; margin-bottom: 10px; font-size: 11px; color: #93c5fd; line-height: 1.45;">
-        <strong>Aquatic Body Detected (${habitat.name}):</strong> Wild edible macrofungi require terrestrial root networks, leaf litter, or host timber and do not fruit in open water bodies. Probability is strictly clamped to 0%.
+      <div style="background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.35); border-radius: 6px; padding: 10px 12px; margin-bottom: 10px; font-size: 11.5px; color: #93c5fd; line-height: 1.45;">
+        <strong>Open Water (${habitat.name}):</strong> Wild mushrooms grow on land in soil, leaf litter, and woodland trees, so they cannot fruit in open water.
       </div>
     `;
   }
